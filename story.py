@@ -113,6 +113,8 @@ class Runner:
                 raise StoryError(f"item {it}: only {len(items)} on the sheet")
             o = items[n]
             at = it.get("at", 0.5)
+            if "on" in o and "at" not in it:
+                return self.p.to_screen(*o["on"])
             if "p1" not in o:
                 x, y, w, h = o["scene_rect"]
                 return self.p.to_screen(x + w / 2, y + h / 2)
@@ -359,8 +361,10 @@ def saved_text_of(path: Path) -> str:
     if not zipfile.is_zipfile(path):
         return Path(path).read_text(encoding="utf-8", errors="replace")
     with zipfile.ZipFile(path) as z:
+        # project.sqlite holds the engineering data (wire numbers...): its
+        # text is stored as plain UTF-8, so a pattern finds it in the bytes
         return "\n".join(z.read(n).decode("utf-8", "replace") for n in z.namelist()
-                         if n.endswith((".xml", ".qet", ".json", ".txt")))
+                         if n.endswith((".xml", ".qet", ".json", ".txt", ".sqlite")))
 
 
 def check_expect(expect, shapes, events, saved_text="", view_zoom=1.0) -> list[str]:
