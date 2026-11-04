@@ -1,0 +1,72 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Video for PR #1714: Settings > General > Zoom step, so zooming reads
+# 110 %, 120 %, 130 % instead of 113.7 %, 130.8 %, 150.4 %.
+title: Zoom by round steps
+summary: Zoom the sheet by 10 % at a time instead of by a factor of 1.15.
+pr: 1714
+icon: Configure QElectroTech
+thumbnail: {before: 1}
+fixture: tests/qttest/fixtures/coil_contact_wired.qet
+
+steps:
+  - title: Zoom by round steps
+    sub: "Settings ▸ Configure QElectroTech ▸ General ▸ Zoom step"
+    hold: 4
+
+  - chapter: "Today each zoom multiplies by 1.15: the zoom reads odd numbers"
+  - highlight: {widget: {class: QToolButton, contains: "%"}}
+    secs: 4.5
+  - key: ctrl+plus
+    pace: 1.4
+  - key: ctrl+plus
+    pace: 1.4
+  - key: ctrl+plus
+    pace: 2.0
+  - key: ctrl+0
+    pace: 1.0
+
+  - chapter: "Open {path:Configure QElectroTech}"
+  - menu: Configure QElectroTech
+  - wait_for: {dialog: Configure QElectroTech}
+  - caption: "Zoom step: 0 keeps the factor of 1.15"
+  - highlight: {widget: {name: m_zoom_step_sb}}
+    secs: 2.5
+  - hold: 2.5
+  - click: {widget: {name: m_zoom_step_sb}}
+  - press: ctrl+a
+  - type: "10"
+  - caption: "Type 10: each zoom is now 10 % of the zoom shown"
+  - hold: 2
+  - click: {widget: {class: QPushButton, text: OK}}
+  - wait_for: {dialog_closed: Configure QElectroTech}
+
+  - chapter: "Ctrl and + now zoom in round steps"
+  - highlight: {widget: {class: QToolButton, contains: "%"}}
+    secs: 5
+  - key: ctrl+plus
+    pace: 1.5
+  - key: ctrl+plus
+    pace: 1.5
+  - key: ctrl+plus
+    pace: 1.5
+  - caption: "The mouse wheel and the zoom buttons do the same"
+  - hold: 1.5
+
+  - chapter: "Alt and the mouse wheel zoom four steps per notch"
+  - wheel: [280, 200]
+    hold_key: alt
+    notches: 1
+    pace: 2.0
+  - wheel: [280, 200]
+    hold_key: alt
+    dir: down
+    notches: 1
+    pace: 2.0
+  - end_caption:
+
+  - title: Zoom by round steps
+    sub: "{path:Configure QElectroTech} ▸ General ▸ Zoom step"
+    hold: 3
+
+expect:
+  - view_zoom: 1.30

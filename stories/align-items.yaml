@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+title: Align items
+summary: Line up the edges of the selected items.
+wiki: aligning_items
+pr: 1087
+thumbnail: {before: 3}
+
+setup:
+  - frame: {rect: [60, 60, 420, 300], fill: 0.8}
+
+steps:
+  - title: Align items
+    sub: Line up several items in one step
+    hold: 4
+
+  - chapter: "First, draw three shapes: {path:Add a rectangle}"
+  - menu: Add a rectangle
+  - click: [100, 100]
+  - click: [170, 150]
+  - click: [240, 160]
+  - click: [350, 200]
+  - click: [150, 250]
+  - click: [200, 320]
+  - key: Escape
+    pace: 1
+
+  - chapter: "Drag a box round them to select them"
+  - drag: {from: [70, 70], to: [380, 345]}
+  - hold: 1.5
+
+  - chapter: "Edit ▸ Align ▸ Align left lines up the left edges"
+  - menu: Align left
+  - wait_for: {undo: Align 2 items}
+  - caption: "Every selected item now starts at the same left edge"
+  - hold: 3
+
+  - chapter: "Then {path:Align top} lines up the top edges"
+  - menu: Align top
+  - wait_for: {undo: Align 2 items}
+  - hold: 3
+
+  - chapter: "Each alignment is one step: Ctrl+Z undoes it"
+  - key: ctrl+z
+  - hold: 1.8
+  - caption: "… and Ctrl+Shift+Z brings it back"
+  - key: ctrl+shift+z
+  - hold: 2.5
+  - end_caption:
+
+  - title: Align items
+    sub: "Edit ▸ Align ▸ Align left"
+    hold: 3
+
+expect:
+  - shapes: {type: Rectangle, count: 3}
+  - undo: Align 2 items
+  - aligned: [left, top]

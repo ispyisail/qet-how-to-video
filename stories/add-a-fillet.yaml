@@ -1,0 +1,77 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+title: Add a fillet
+summary: Round the corner between two drawn lines.
+wiki: drawing_arcs
+pr: 1212
+thumbnail: {before: 2}
+
+setup:
+  - frame: {rect: [100, 80, 380, 300], fill: 0.8}
+
+steps:
+  - title: Add a fillet
+    sub: Round the corner between two lines
+    hold: 4
+
+  - chapter: "First, draw two lines that meet at a corner: {path:Add line}"
+  - menu: Add line
+  - click: [160, 120]
+  - click: [160, 300]
+  - click: [160, 300]
+  - click: [400, 300]
+  - click: [400, 300]
+  - click: [400, 120]
+  - key: Escape
+    pace: 1
+
+  - chapter: "Pick the tool: {path:Add a fillet}"
+  - menu: Add a fillet
+  - caption: "The status bar says what to do: click two lines…"
+  - highlight: {widget: {class: QStatusBar}}
+    secs: 3
+    left: 0.3
+  - hold: 2.8
+
+  - chapter: "Click the first line, then the second"
+  - click: [280, 300]
+  - click: [160, 210]
+  - wait_for: {dialog: Fillet}
+
+  - caption: "Type the radius, then press Enter"
+  - press: ctrl+a
+  - type: "40"
+  - key: Return
+  - wait_for: {undo: Add a fillet}
+  - caption: "The lines are trimmed and an arc joins them"
+  - hold: 3
+
+  - chapter: "Or click once right on a corner"
+  - click: [400, 300]
+  - wait_for: {dialog: Fillet}
+  - caption: "The last radius is remembered: just press Enter"
+  - hold: 1.5
+  - key: Return
+  - wait_for: {undo: Add a fillet}
+  - hold: 2.5
+
+  - chapter: "Each fillet is one step: Ctrl+Z undoes it"
+  - key: ctrl+z
+  - hold: 1.8
+  - caption: "… and Ctrl+Shift+Z brings it back"
+  - key: ctrl+shift+z
+  - hold: 1.8
+
+  - chapter: "Esc or right-click leaves the tool. It is also on the Add toolbar"
+  - key: Escape
+  - move: {toolbar: Add a fillet}
+  - hold: 1
+  - end_caption:
+  - title: Add a fillet
+    sub: "{path:Add a fillet}"
+    hold: 3
+
+expect:
+  - undo: Add a fillet
+  - shapes: {type: Line, count: 3}
+  - shapes: {type: Arc, count: 2}
+  - arcs_tangent: true

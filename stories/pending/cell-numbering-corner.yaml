@@ -1,0 +1,72 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Test video for PR #1681 (the follow-up to #1497): changing the corner the
+# cells are numbered from renumbers the rulers and the coil's cross-reference
+# at once and is saved as <cell_origin corner>. Found while making it: the
+# contact's cross-reference stays on the old numbering until the project is
+# reopened (same on master 269943851, so not new in #1681).
+title: Number cells from any corner
+summary: Choose the corner the sheet's columns and rows are numbered from.
+pr: 1681
+icon: Project properties
+thumbnail: {before: 1, crop: [0.14, 0.13, 0.62, 0.62]}
+fixture: tests/qttest/fixtures/coil_contact_wired.qet
+
+setup:
+  - frame: {rect: [0, 0, 560, 300], fill: 0.95}
+
+steps:
+  - title: Number cells from any corner
+    sub: "Project properties: Cell numbering starts from"
+    hold: 4
+
+  - chapter: "Columns are numbered from the left, rows from the top"
+  - highlight: {rect: [25, 5, 560, 20]}
+    secs: 2.5
+  - hold: 1.2
+  - highlight: {rect: [4, 25, 20, 410]}
+    secs: 2.5
+  - hold: 2.4
+  - caption: "The coil and its contact give each other's cell: 1-C7 and 1-C3"
+  - highlight: {rect: [204, 210, 38, 20]}
+    secs: 3
+  - highlight: {rect: [398, 210, 36, 20]}
+    secs: 3
+  - hold: 3
+
+  - chapter: "Open {path:Project properties}"
+  - menu: Project properties
+  - wait_for: {dialog: Project properties}
+  - caption: "At the bottom of General: Cell numbering starts from"
+  - highlight: {widget: {class: QComboBox, text: Top-Left}}
+    secs: 2.5
+  - hold: 2.5
+  - click: {widget: {class: QComboBox, text: Top-Left}}
+  - caption: "Pick the corner the numbering starts from"
+  - click: {combo_item: Bottom-Right}
+  - hold: 1.2
+  - click: {widget: {class: QPushButton, text: OK}}
+  - wait_for: {dialog_closed: Project properties}
+
+  - chapter: "Columns now count from the right, rows from the bottom"
+  - highlight: {rect: [25, 5, 560, 20]}
+    secs: 2.5
+  - hold: 1.2
+  - highlight: {rect: [4, 25, 20, 410]}
+    secs: 2.5
+  - hold: 2.4
+  - caption: "The coil's cross-reference follows: 1-C7 is now 1-F11"
+  - highlight: {rect: [204, 210, 38, 20]}
+    secs: 3.5
+  - hold: 3.5
+  - caption: "The contact's still reads 1-C3: it becomes 1-F15 only when the project is reopened"
+  - highlight: {rect: [398, 210, 36, 20]}
+    secs: 4.5
+  - hold: 4.5
+  - end_caption:
+
+  - title: Number cells from any corner
+    sub: "{path:Project properties} ▸ General"
+    hold: 3
+
+expect:
+  - saved_text: 'cell_origin corner="bottom-right"'
