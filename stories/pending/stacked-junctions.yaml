@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Test video for PR #1728: a wire between two terminals on the same point
+# (two symbols placed against each other) is no longer drawn and no longer
+# catches the click, so the upper of two stacked junctions can be clicked
+# and dragged. Before the fix the press at (300, 200) lands on that wire
+# and the drag moves nothing, so the saved_text check below fails.
+# The fixture is stacked-junctions.qet beside this file: a T-junction with a
+# four-way connector right under it, their terminals meeting at (300, 210).
+# The T-junction comes last in the file so it is on top where the two
+# symbols' boxes overlap.
+title: Select symbols that touch
+summary: Click and move one of two junctions that touch. The wire between them stays.
+pr: 1728
+fixture: stacked-junctions.qet
+thumbnail: {before: 2}
+
+setup:
+  - frame: {rect: [160, 150, 380, 190], fill: 0.85}
+
+steps:
+  - title: Select symbols that touch
+    sub: Two junctions placed one above the other
+    hold: 4
+
+  - chapter: "Two junction symbols, placed one against the other"
+  - highlight: {rect: [286, 188, 28, 42]}
+    secs: 3
+  - hold: 3
+  - caption: "Their terminals meet, so the wire joining them has no length"
+  - hold: 4
+
+  - chapter: "Click the upper junction: it is selected"
+  - click: [300, 200]
+  - hold: 3.5
+  - caption: "The wire between them is not drawn and does not take the click"
+  - hold: 4
+
+  - chapter: "Drag it away: the two junctions are still joined"
+  - drag: {from: [300, 200], to: [300, 160]}
+  - hold: 1
+  - highlight: {rect: [290, 165, 20, 50]}
+    secs: 3
+  - hold: 3.5
+  - end_caption:
+
+  - title: Select symbols that touch
+    sub: A click where two symbols touch reaches the symbol
+    hold: 3
+
+expect:
+  - saved_text: 'thruright\.elmt"[^>]* x="300" y="160"'

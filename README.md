@@ -75,7 +75,7 @@ title: Add a fillet
 summary: Round the corner between two drawn lines.
 wiki: drawing_arcs          # QET wiki page, shown on the end card
 pr: 1212                    # pull request, shown on the end card
-fixture: tests/qttest/fixtures/coil_contact_wired.qet   # optional, relative to the checkout
+fixture: tests/qttest/fixtures/coil_contact_wired.qet   # optional: beside the story, else relative to the checkout
 thumbnail: {before: 2}      # before/after thumbnail: "before" = as chapter 2 starts
 
 steps:

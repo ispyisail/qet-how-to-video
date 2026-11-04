@@ -286,7 +286,9 @@ def thumbnail_ass(title, summary):
     fs, n = fits[0] if fits else (52, 4)
     tlines = _wrap(title, fs, 520, n) or _wrap(title, fs, 520, 9) or [title]
     sfs = 36
-    slines = _wrap(summary, sfs * 0.9, 520, 3) or ([summary] if summary else [])
+    # a summary longer than three lines still wraps: one long line would run
+    # under the pictures and off the edge
+    slines = _wrap(summary, sfs * 0.9, 520, 3) or _wrap(summary, sfs * 0.9, 520, 9) or ([summary] if summary else [])
     y_title = 330
     y_title = 330 if len(tlines) <= 2 else 290
     y_sum = y_title + len(tlines) * fs * 1.08 + 24

@@ -401,6 +401,7 @@ def load(path) -> dict:
     for key in ("title", "steps"):
         if key not in story:
             raise StoryError(f"{path}: missing '{key}'")
+    story["_dir"] = str(Path(path).resolve().parent)
     return story
 
 
@@ -436,7 +437,10 @@ def record(story: dict, binary, out, name, qet_dir=None) -> Clip:
     conf = {"elements-collections": {"common-collection-path": str(qet / "elements")}}
     fixture = story.get("fixture")
     if fixture and not Path(fixture).is_absolute():
-        fixture = str(qet / fixture)          # relative to the QET checkout the binary was built from
+        beside = Path(story.get("_dir", "")) / fixture
+        # beside the story (a fixture made for the video), else relative to
+        # the QET checkout the binary was built from
+        fixture = str(beside if story.get("_dir") and beside.is_file() else qet / fixture)
     with Clip(binary, out, name, conf=conf, project=fixture) as c:
         r = Runner(c)
         if not fixture:
