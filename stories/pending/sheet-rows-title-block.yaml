@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Test video for bugtracker/GitHub issue #1751: after changing the number of
+# rows in Sheet properties the title block stayed where the old row count put
+# it (the border setters updated the rectangle before storing the new value).
+title: Change the number of rows
+summary: The title block follows the sheet when rows are added or removed.
+pr: 1751
+icon: Sheet properties
+
+setup:
+  - frame: {rect: [0, 0, 900, 1100], fill: 0.97}
+
+steps:
+  - title: Change the number of rows
+    sub: "The title block moves with the sheet"
+    hold: 3
+
+  - chapter: "Open {path:Sheet properties}"
+  - menu: Sheet properties
+  - wait_for: {dialog: Sheet properties}
+  - caption: "Sheet size: Rows"
+  - highlight: {widget: {name: m_rows_count_sp}}
+    secs: 2.5
+  - click: {widget: {name: m_rows_count_sp}}
+  - press: ctrl+a
+  - type: "12"
+  - press: Tab
+  - hold: 1
+  - click: {widget: {class: QPushButton, text: OK}}
+  - wait_for: {dialog_closed: Sheet properties}
+
+  - chapter: "The title block sits right under the last row"
+  - focus: {rect: [0, 880, 1060, 170]}
+    secs: 5
+  - hold: 4
+  - end_caption:
+  - hold: 3
+
+  - title: Change the number of rows
+    sub: "{path:Sheet properties}"
+    hold: 3
+
+expect:
+  - undo: change the sheet size
+  - saved_text: 'rows="12"'
