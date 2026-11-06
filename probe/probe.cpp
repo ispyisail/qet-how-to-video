@@ -16,11 +16,13 @@
 #include <QDialog>
 #include <QLabel>
 #include <QAbstractItemView>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QCursor>
 #include <QToolTip>
 #include <QMessageBox>
 #include <QGraphicsItem>
+#include <QGraphicsPathItem>
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QJsonArray>
@@ -32,7 +34,9 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QScrollBar>
+#include <QListWidget>
 #include <QStatusBar>
+#include <QTabBar>
 #include <QTimer>
 #include <QToolBar>
 #include <QUndoStack>
@@ -334,6 +338,25 @@ private:
 				continue;
 			if (!title.isEmpty() && !w->windowTitle().contains(title))
 				continue;
+			// a tab of a tab bar, or an entry of a list, by its text
+			if (!text.isEmpty()) {
+				if (auto *tb = qobject_cast<QTabBar *>(w)) {
+					for (int i = 0; i < tb->count(); ++i)
+						if (plain(tb->tabText(i)) == text)
+							hits << QJsonObject{{"class", "QTabBar"}, {"name", w->objectName()},
+							                    {"title", QString()}, {"text", tb->tabText(i)},
+							                    {"box", box(tb, tb->tabRect(i))}};
+					continue;
+				}
+				if (auto *lw = qobject_cast<QListWidget *>(w)) {
+					for (int i = 0; i < lw->count(); ++i)
+						if (plain(lw->item(i)->text()) == text)
+							hits << QJsonObject{{"class", "QListWidget"}, {"name", w->objectName()},
+							                    {"title", QString()}, {"text", lw->item(i)->text()},
+							                    {"box", box(lw->viewport(), lw->visualItemRect(lw->item(i)))}};
+					continue;
+				}
+			}
 			if (!text.isEmpty()) {
 				// a button by its text, a drop-down by what it shows now
 				auto *b = qobject_cast<QAbstractButton *>(w);
@@ -350,9 +373,14 @@ private:
 				if (!plain(t).contains(contains))
 					continue;
 			}
+			// a check box only takes a click on its indicator and text, not
+			// on the empty width a layout gives it
+			QRect hit_rect = w->rect();
+			if (qobject_cast<QCheckBox *>(w))
+				hit_rect.setWidth(qMin(hit_rect.width(), w->sizeHint().width()));
 			hits << QJsonObject{{"class", w->metaObject()->className()}, {"name", w->objectName()},
 			                    {"title", w->windowTitle()}, {"text", w->property("text").toString()},
-			                    {"box", box(w, w->rect())}};
+			                    {"box", box(w, hit_rect)}};
 		}
 		return {{"ok", !hits.isEmpty()}, {"hits", hits}};
 	}
@@ -410,6 +438,28 @@ private:
 			QJsonObject o{{"class", c}};
 			const QRectF r = it->sceneBoundingRect();
 			o["scene_rect"] = QJsonArray{r.x(), r.y(), r.width(), r.height()};
+			if (c == QLatin1String("Conductor")) {
+				// a point on the wire where a click selects it: the one
+				// of its hit area, topmost there, nearest the middle of it
+				QList<QPointF> hit;
+				const QRectF br = it->sceneBoundingRect();
+				for (qreal y = br.top(); y <= br.bottom(); y += 1)
+					for (qreal x = br.left(); x <= br.right(); x += 1)
+						if (it->contains(it->mapFromScene(QPointF(x, y)))
+						    && v->scene()->itemAt(QPointF(x, y), QTransform()) == it)
+							hit << QPointF(x, y);
+				if (!hit.isEmpty()) {
+					QPointF mid;
+					for (const QPointF &q : hit)
+						mid += q;
+					mid /= hit.size();
+					QPointF best = hit.first();
+					for (const QPointF &q : hit)
+						if (QLineF(q, mid).length() < QLineF(best, mid).length())
+							best = q;
+					o["on"] = QJsonArray{best.x(), best.y()};
+				}
+			}
 			const QVariant line = obj->property("line");
 			if (line.canConvert<QLineF>()) {
 				const QPointF p1 = obj->mapToScene(line.toLineF().p1()), p2 = obj->mapToScene(line.toLineF().p2());

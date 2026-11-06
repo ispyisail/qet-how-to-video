@@ -1,0 +1,73 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Video for the PR of #1539: a project that turns on "Draw conductors from
+# their potential type" draws a wire in the colour, line style and width of
+# its type (N: blue, dashed). The wire's own stored style is not changed.
+title: Draw wires by potential type
+summary: Give a potential a type (L, N, PE...) and its wires are drawn in that type's colour and line style.
+pr: 1746
+icon: Project properties
+thumbnail: {before: 1}
+fixture: tests/qttest/fixtures/coil_contact_wired.qet
+
+setup:
+  - frame: {rect: [150, 150, 350, 150], fill: 0.9}
+
+steps:
+  - title: Draw wires by potential type
+    sub: "Project properties: Potential types"
+    hold: 4
+
+  - chapter: "A coil wired to its contact: both wires are plain black"
+  - highlight: {rect: [185, 155, 230, 90]}
+    secs: 3
+  - hold: 3
+
+  - chapter: "Open {path:Project properties}"
+  - menu: Project properties
+  - wait_for: {dialog: Project properties}
+  - click: {widget: {class: QListWidget, text: New sheet}}
+  - caption: "The Potential types tab lists L, N, PE, 24V and 0V"
+  - click: {widget: {class: QTabBar, text: Potential types}}
+  - hold: 2.5
+  - caption: "Each type has a colour, a line style and a width"
+  - hold: 3
+  - caption: "Turn on: Draw conductors from their potential type"
+  - click: {widget: {class: QCheckBox, contains: potential type}}
+  - hold: 1.5
+  - click: {widget: {class: QPushButton, text: OK}}
+  - wait_for: {dialog_closed: Project properties}
+  - caption: "Nothing changes yet: no wire has a type"
+  - hold: 2.5
+
+  - chapter: "Choose a wire's type: click the wire"
+  - click: {item: {class: Conductor, n: 1}}
+  - hold: 1
+  - caption: "Then {path:Edit conductor}"
+  - menu: Edit conductor
+  - wait_for: {dialog: Edit conductor properties}
+  - caption: "Potential type: N"
+  - click: {widget: {class: QComboBox, text: None}}
+  - click: {combo_item: N}
+  - hold: 1.5
+  - click: {widget: {class: QPushButton, text: OK}}
+  - wait_for: {dialog_closed: Edit conductor properties}
+
+  - chapter: "Click an empty spot: the wire is drawn as an N, blue and dashed"
+  - click: [300, 280]
+  - hold: 1
+  - highlight: {rect: [185, 155, 230, 40]}
+    secs: 3
+  - hold: 3.5
+  - caption: "The type applies to every wire on the same potential"
+  - hold: 3.5
+  - caption: "The wire's own style is kept: turn the setting off and it comes back"
+  - hold: 4
+  - end_caption:
+
+  - title: Draw wires by potential type
+    sub: "{path:Project properties} ▸ New sheet ▸ Potential types"
+    hold: 3
+
+expect:
+  - saved_text: 'potentialtypes enabled="1"'
+  - saved_text: 'potential_type="N"'
