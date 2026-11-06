@@ -31,6 +31,8 @@ Steps (one main key each; extra keys are options):
   highlight: {widget: {class: QStatusBar}}     secs: 3   left: 0.3 (fraction of the width)
   highlight: {rect: [x, y, w, h]}              an area of the sheet
   frame: {rect: [x, y, w, h], fill: 0.7}       zoom the sheet onto an area
+  focus: {rect: [x, y, w, h]} | {widget: ..}   secs: 4   the camera frames it, clear
+                                 of the caption; nothing is clicked or drawn
   hold: 2
   wheel: [x, y] | {widget: ..}     notches: 3   dir: up|down   hold_key: alt
 
@@ -201,6 +203,14 @@ class Runner:
                 w = round(w * opt.get("left", 1.0))       # a part of a wide widget, from its left edge
                 i = round(3 * c.scale)                     # keep the whole border on screen
                 c.highlight(x + i, y + i, w - 2 * i, h - 2 * i, secs=opt.get("secs", 3.0))
+        elif kind == "focus":
+            if "rect" in value:                      # an area of the sheet, in sheet coordinates
+                rx, ry, rw, rh = value["rect"]
+                (x, y), (x2, y2) = p.to_screen(rx, ry), p.to_screen(rx + rw, ry + rh)
+                c.focus(x, y, x2 - x, y2 - y, secs=opt.get("secs", 4.0))
+            else:
+                x, y, w, h = p.wait_widget(**value["widget"])["box"]
+                c.focus(x, y, w, h, secs=opt.get("secs", 4.0))
         elif kind == "wheel":
             x, y = self.point(value)
             c.wheel(x, y, opt.get("notches", 1), up=opt.get("dir", "up") == "up",

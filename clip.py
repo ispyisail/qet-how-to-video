@@ -170,6 +170,11 @@ class Clip(Session):
         """An orange frame around (x, y, w, h) for @p secs, from now."""
         self._log("box", x=x, y=y, w=w, h=h, secs=secs)
 
+    def focus(self, x, y, w, h, secs=4.0):
+        """Tell the camera (x, y, w, h) is what to look at for @p secs, from
+        now. Nothing is drawn: the camera frames it clear of the captions."""
+        self._log("focus", x=x, y=y, w=w, h=h, secs=secs)
+
     def hold(self, s):
         nap(s)
 

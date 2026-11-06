@@ -124,7 +124,13 @@ Each step has one main key; the others are options.
 | `wait_for: {dialog: T}` | also `dialog_closed`, `undo`, `status`, `action` | `timeout` (s, default 10) |
 | `highlight: {widget: …}` or `{rect: [x, y, w, h]}` | an orange frame | `secs`, `left` (fraction of a wide widget) |
 | `frame: {rect: [x, y, w, h], fill: 0.7}` | zoom the sheet onto an area | |
+| `focus: {rect: [x, y, w, h]}` or `{widget: …}` | the camera frames it for a while; nothing is clicked or drawn. Use it for a result nobody clicks on | `secs` (default 4) |
 | `hold: 2` | wait | |
+
+Captions stay at the bottom unless they would cover what is being shown (the
+area of a `focus` or `highlight`, else the clicks); then they move to the top,
+except while a menu is in use. When the camera zooms, it looks lower by just
+enough to keep the subject above the caption band.
 
 In captions, `{path:Command}` becomes "Edit ▸ Add ▸ Command" and
 `{tip:Command}` the command's status tip, both read from the running program.

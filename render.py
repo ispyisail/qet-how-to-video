@@ -37,6 +37,7 @@ INTRO, OUTRO, XFADE = 3.6, 5.5, 0.6
 CAM_MOVE = 0.9                    # seconds an ease takes
 WIKI = "https://github.com/qelectrotech/qelectrotech-source-mirror/wiki/"
 MENU_BAND = 0.13                  # top part of the screen: menu bar and toolbars
+CAP_BAND = 0.24                   # bottom part of the picture a caption can cover
 
 
 def _logo(info: dict, dest: Path):
@@ -117,7 +118,9 @@ class Camera:
 
 def plan_camera(events, t0, end, size, scale):
     """Shots from what the hands do: clicks on the sheet frame a zoom on them,
-    menu clicks and highlights bring the whole screen back."""
+    a focus step frames its area, menu clicks and highlights bring the whole
+    screen back. A shot puts its subject in the middle of the picture above
+    the caption band, never behind the caption."""
     cam = Camera(size)
     W, H = size
     sheet = [(e["t"] - t0, e["x"], e["y"]) for e in events
@@ -126,37 +129,58 @@ def plan_camera(events, t0, end, size, scale):
                    if (e["kind"] in ("click", "move") and e["y"] <= MENU_BAND * H) or (e["kind"] == "click" and e.get("ui"))]
                   + [e["t"] - t0 for e in events if e["kind"] == "box"])
     # group sheet clicks into shots: a gap of 6 s or a menu click in between starts a new one
-    shots, cur = [], []
+    groups, cur = [], []
     for t, x, y in sheet:
         if cur and (t - cur[-1][0] > 6 or any(cur[-1][0] < m < t for m in menu)):
-            shots.append(cur); cur = []
+            groups.append(cur); cur = []
         cur.append((t, x, y))
     if cur:
-        shots.append(cur)
+        groups.append(cur)
     dialogs = [(e["t"] - t0, e) for e in events if e["kind"] == "dialog"]
-    for sh in shots:
-        start = max(0.0, sh[0][0] - 1.2)
-        # leave the shot a bit after the last click, or early enough to be
-        # back on the whole screen when the next menu action begins
+    # (start, stop, points, padding, how far in it may zoom)
+    shots = []
+    for sh in groups:
         later = [m for m in menu if m > sh[-1][0]]
         stop = min(later[0] - CAM_MOVE - 0.3 if later else end, sh[-1][0] + 2.0)
-        start = max(start, cam.targets[-1][0] + CAM_MOVE + 0.2)
-        if stop - start < CAM_MOVE + 1.0:
-            continue                  # too short to go in and come back out cleanly
+        pts = [(x, y) for _, x, y in sh]
+        start = max(0.0, sh[0][0] - 1.2)
         # frame the clicks and any dialog open during the shot, so the
         # dialog is in view without the camera moving
-        pts = [(x, y) for _, x, y in sh]
+        with_dialog = False
         for t, d in dialogs:
             if start <= t <= stop:
                 pts += [(d["x"], d["y"]), (d["x"] + d["w"], d["y"] + d["h"])]
+                with_dialog = True
+        shots.append((start, stop, pts, 1.25 if with_dialog else 1.7, 1.7))
+    for e in events:
+        if e["kind"] != "focus" or not 0 <= e["t"] - t0 <= end:
+            continue
+        t = e["t"] - t0
+        later = [m for m in menu if m > t]
+        stop = min(later[0] - CAM_MOVE - 0.3 if later else end, t + e.get("secs", 4.0))
+        pts = [(e["x"], e["y"]), (e["x"] + e["w"], e["y"] + e["h"])]
+        shots.append((max(0.0, t - 0.2), stop, pts, 1.3, 2.2))
+    safe_h = H * (1 - CAP_BAND)
+    for start, stop, pts, pad, zmax in sorted(shots, key=lambda s: s[0]):
+        start = max(start, cam.targets[-1][0] + CAM_MOVE + 0.2)
+        if stop - start < CAM_MOVE + 1.0:
+            continue                  # too short to go in and come back out cleanly
         xs, ys = [p[0] for p in pts], [p[1] for p in pts]
-        bw, bh = max(xs) - min(xs), max(ys) - min(ys)
-        pw, ph = max(bw * 1.25 if len(pts) > len(sh) else bw * 1.7, W * 0.30), \
-            max(bh * 1.25 if len(pts) > len(sh) else bh * 1.7, H * 0.30)
-        z = min(1.7, W / pw, H / ph)
+        pw = max((max(xs) - min(xs)) * pad, W * 0.30)
+        ph = max((max(ys) - min(ys)) * pad, H * 0.30)
+        z = min(zmax, W / pw, safe_h / ph)
         if z < 1.18:
             continue
-        cx, cy = (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2
+        # keep the subject clear of the caption band: when its bottom would
+        # fall in the band, look lower by just that much, as long as its top
+        # stays in the picture. A subject already clear does not move.
+        cx = (min(xs) + max(xs)) / 2
+        cy = (min(ys) + max(ys)) / 2
+        view_h = H / z
+        below = (max(ys) - cy) - view_h * (0.5 - CAP_BAND - 0.02)
+        room = (cy - min(ys)) - view_h * (0.5 - 0.04)
+        if below > 0:
+            cy += min(below, max(0.0, -room))
         cam.go(start, z, cx, cy)
         cam.go(stop, 1.0, 0, 0)
     cam.ui_times = menu
@@ -177,6 +201,7 @@ ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Cap,{FONT},{fs},&H00FFFFFF,&H00FFFFFF,&H28202020,&H28202020,1,0,0,0,100,100,0,0,3,{round(fs*0.45)},0,2,80,80,{round(h*0.12)},1
+Style: CapTop,{FONT},{fs},&H00FFFFFF,&H00FFFFFF,&H28202020,&H28202020,1,0,0,0,100,100,0,0,3,{round(fs*0.45)},0,8,80,80,{round(h*0.06)},1
 Style: Title,{FONT},{round(fs*1.6)},&H00FFFFFF,&H00FFFFFF,&H10582A0E,&H10582A0E,1,0,0,0,100,100,0,0,3,{round(fs*0.8)},0,5,80,80,0,1
 Style: Sub,{FONT},{round(fs*0.9)},&H00FFFFFF,&H00FFFFFF,&H10582A0E,&H10582A0E,0,0,0,0,100,100,0,0,3,{round(fs*0.5)},0,5,80,80,0,1
 Style: Key,{FONT},{round(fs*0.9)},&H00202020,&H00202020,&H10F0F0F0,&H10F0F0F0,1,0,0,0,100,100,0,0,3,{round(fs*0.35)},0,3,0,40,{round(h*0.12)},1
@@ -195,7 +220,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             continue
         t = max(0.0, t)
         if e["kind"] in ("caption", "caption_end", "end") and cap is not None:
-            lines.append(f"Dialogue: 1,{_ass_time(cap[0])},{_ass_time(min(t, end))},Cap,,0,0,0,,{{\\fad(150,150)}}{_esc(cap[1])}")
+            style = caption_style(cap[1], cap[0], min(t, end), events, t0, cam, size_out)
+            lines.append(f"Dialogue: 1,{_ass_time(cap[0])},{_ass_time(min(t, end))},{style},,0,0,0,,{{\\fad(150,150)}}{_esc(cap[1])}")
             cap = None
         if e["kind"] in ("title_end", "end") and mid_title is not None:
             lines.append(f"Dialogue: 2,{_ass_time(mid_title[0])},{_ass_time(min(t, end))},Title,,0,0,0,,{{\\fad(200,300)\\pos({w//2},{h//2})}}{_esc(mid_title[1])}")
@@ -218,6 +244,56 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         elif e["kind"] == "key":
             lines.append(f"Dialogue: 2,{_ass_time(t)},{_ass_time(t + 1.2)},Key,,0,0,0,,{{\\fad(80,200)}}{_esc(_key_label(e['key']))}")
     return head + "\n".join(lines) + "\n"
+
+
+def caption_boxes(text, size_out):
+    """Where a caption sits at the bottom and at the top, as (x0, y0, x1, y1)
+    in output pixels: the same arithmetic as the Cap and CapTop styles."""
+    w, h = size_out
+    fs = round(h * 0.042)
+    tw = min(w - 160, len(text) * fs * 0.56) + 2 * round(fs * 0.45)
+    th = fs * 1.25 * (1 + int(len(text) * fs * 0.56 // (w - 160))) + 2 * round(fs * 0.45)
+    x0, x1 = (w - tw) / 2, (w + tw) / 2
+    return (x0, h - h * 0.12 - th, x1, h - h * 0.12), (x0, h * 0.06, x1, h * 0.06 + th)
+
+
+def caption_subjects(a, b, events, t0, cam):
+    """What the viewer should be looking at while a caption is up, in output
+    pixels once the camera has settled: the area of a focus step or a
+    highlight, else the clicks on the sheet."""
+    out, clicks = [], []
+    for e in events:
+        t = e["t"] - t0
+        if e["kind"] in ("focus", "box"):
+            secs = e.get("secs", 3.0)
+            if t < b and t + secs > a:
+                when = min(max(t, a) + CAM_MOVE, b)
+                x, y, _ = cam.to_out(e["x"], e["y"], when)
+                x2, y2, _ = cam.to_out(e["x"] + e["w"], e["y"] + e["h"], when)
+                out.append((x, y, x2, y2))
+        elif e["kind"] == "click" and not e.get("ui") and a - 0.5 <= t <= b:
+            x, y, _ = cam.to_out(e["x"], e["y"], t)
+            clicks.append((x - 30, y - 30, x + 30, y + 30))
+    return out or clicks
+
+
+def _overlap(r, s):
+    return max(0.0, min(r[2], s[2]) - max(r[0], s[0])) * max(0.0, min(r[3], s[3]) - max(r[1], s[1]))
+
+
+def caption_style(text, a, b, events, t0, cam, size_out):
+    """Cap (bottom) unless the caption would cover what it is about and the
+    top covers less; never the top while a menu or toolbar is being used."""
+    subjects = caption_subjects(a, b, events, t0, cam)
+    if not subjects:
+        return "Cap"
+    bottom, top = caption_boxes(text, size_out)
+    under_bottom = sum(_overlap(bottom, s) for s in subjects)
+    if not under_bottom:
+        return "Cap"
+    if any(a <= m <= b for m in getattr(cam, "ui_times", [])):
+        return "Cap"
+    return "CapTop" if sum(_overlap(top, s) for s in subjects) < under_bottom else "Cap"
 
 
 def card_ass(lines, size=(OW, OH)):
