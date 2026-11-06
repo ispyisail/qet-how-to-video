@@ -4,7 +4,7 @@
 # it (the border setters updated the rectangle before storing the new value).
 title: Change the number of rows
 summary: The title block follows the sheet when rows are added or removed.
-pr: 1751
+pr: 1757
 icon: Sheet properties
 
 setup:
