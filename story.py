@@ -18,7 +18,7 @@ Steps (one main key each; extra keys are options):
   end_caption:
   menu: Add line                 walk the menu path to the command and click it
   toolbar: Add a fillet          click the command's toolbar button
-  click: [x, y]                  a sheet point        button: right
+  click: [x, y]                  a sheet point        button: right   double: true
   click: {widget: {class: QStatusBar}}   or  {toolbar: CMD}  or  {item: {class: .., n: 1, at: 0.5}}
          {widget: {class: QComboBox, text: Top-Left}}  a drop-down by what it shows
          {combo_item: Bottom-Right}     an entry of the drop-down list that is open
@@ -72,7 +72,7 @@ from clip import Clip, nap  # noqa: E402
 
 PACE = 0.5          # seconds a viewer gets after every action
 OPTIONS = {"sub", "hold", "button", "timeout", "secs", "fill", "show", "pace", "left",
-           "notches", "dir", "hold_key", "gap"}
+           "notches", "dir", "hold_key", "gap", "double"}
 
 
 class StoryError(RuntimeError):
@@ -174,7 +174,7 @@ class Runner:
         elif kind == "click":
             x, y = self.point(value)
             c.click(x, y, button=3 if opt.get("button") == "right" else 1, delay=0.3,
-                    ui=isinstance(value, dict) and "item" not in value)
+                    double=bool(opt.get("double")), ui=isinstance(value, dict) and "item" not in value)
             self.after(opt)
         elif kind == "move":
             c.move(*self.point(value), delay=opt.get("pace", 0.3))
@@ -476,6 +476,10 @@ def record(story: dict, binary, out, name, qet_dir=None) -> Clip:
         c.stop_recording()
         write_meta(story, qet, out, name, c.probe)
         saved = save_project(c)
+        # a copy beside the outputs: the sandbox goes, and a failed check
+        # is answered by reading what was actually saved
+        import shutil
+        shutil.copy(saved, Path(out) / f"{name}.saved{saved.suffix}")
         shapes = saved_shapes(saved)
         saved_text = saved_text_of(saved)
         events = list(c.probe.events)

@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Bugtracker #347: while a symbol's text is being edited on the sheet, Home
+# and End moved to the first/last sheet instead of moving the text cursor.
+title: Home and End while editing a text
+summary: Home and End move the cursor in the text being edited, not to another sheet.
+fixture: tests/qttest/fixtures/report_text_late_folio.qet
+
+setup:
+  - frame: {rect: [600, 330, 260, 160], fill: 0.6}
+
+steps:
+  - title: Home and End while editing a text
+    sub: "They move the cursor, not the sheet"
+    hold: 3
+  - chapter: "Double-click a symbol's text to edit it"
+  - click: [719, 419]
+    double: true
+  - hold: 1
+  - caption: "End goes to the end of the text"
+  - key: End
+  - type: "X"
+  - caption: "Home goes to its start"
+  - key: Home
+  - type: "Y"
+  - hold: 1
+  - end_caption:
+  - click: [640, 470]
+  - hold: 1
+  - title: Home and End while editing a text
+    sub: "Bugtracker #347"
+    hold: 3
+
+expect:
+  - saved_text: '<text>YTX</text>'
