@@ -35,6 +35,8 @@
 #include <QMenuBar>
 #include <QScrollBar>
 #include <QListWidget>
+#include <QTreeWidget>
+#include <QTreeWidgetItemIterator>
 #include <QStatusBar>
 #include <QTabBar>
 #include <QTimer>
@@ -346,6 +348,23 @@ private:
 							hits << QJsonObject{{"class", "QTabBar"}, {"name", w->objectName()},
 							                    {"title", QString()}, {"text", tb->tabText(i)},
 							                    {"box", box(tb, tb->tabRect(i))}};
+					continue;
+				}
+				if (auto *tw = qobject_cast<QTreeWidget *>(w)) {
+					// a row of a tree list (one shown: its parents expanded),
+					// by the text of any of its columns
+					for (QTreeWidgetItemIterator it(tw); *it; ++it) {
+						QTreeWidgetItem *item = *it;
+						if (tw->visualItemRect(item).isEmpty())
+							continue;
+						for (int c = 0; c < tw->columnCount(); ++c)
+							if (plain(item->text(c)) == text) {
+								hits << QJsonObject{{"class", "QTreeWidget"}, {"name", w->objectName()},
+								                    {"title", QString()}, {"text", item->text(c)},
+								                    {"box", box(tw->viewport(), tw->visualItemRect(item))}};
+								break;
+							}
+					}
 					continue;
 				}
 				if (auto *lw = qobject_cast<QListWidget *>(w)) {
