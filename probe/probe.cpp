@@ -34,7 +34,10 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QScrollBar>
+#include <QListView>
+#include <QLineEdit>
 #include <QListWidget>
+#include <QTreeView>
 #include <QTreeWidget>
 #include <QTreeWidgetItemIterator>
 #include <QStatusBar>
@@ -43,6 +46,8 @@
 #include <QToolBar>
 #include <QUndoStack>
 #include <QWindow>
+
+#include <functional>
 
 namespace {
 
@@ -338,7 +343,7 @@ private:
 				continue;
 			if (!name.isEmpty() && w->objectName() != name)
 				continue;
-			if (!title.isEmpty() && !w->windowTitle().contains(title))
+			if (!title.isEmpty() && !w->window()->windowTitle().contains(title))
 				continue;
 			// a tab of a tab bar, or an entry of a list, by its text
 			if (!text.isEmpty()) {
@@ -365,6 +370,43 @@ private:
 								break;
 							}
 					}
+					continue;
+				}
+				if (auto *iv = qobject_cast<QAbstractItemView *>(w);
+				    iv && iv->model() && !qobject_cast<QTreeWidget *>(w)
+				    && !qobject_cast<QListWidget *>(w) && !qobject_cast<QComboBox *>(w->parentWidget())) {
+					// a row of a list or tree on a model (the element
+					// collection, its search results), one shown, by its
+					// display text
+					auto *tv = qobject_cast<QTreeView *>(iv);
+					auto *lv = qobject_cast<QListView *>(iv);
+					QAbstractItemModel *m = iv->model();
+					std::function<void(const QModelIndex &)> walk = [&](const QModelIndex &parent) {
+						for (int r = 0; r < m->rowCount(parent); ++r) {
+							const QModelIndex i = m->index(r, 0, parent);
+							if ((tv && tv->isRowHidden(r, parent)) || (lv && lv->isRowHidden(r)))
+								continue;
+							const QRect rect = iv->visualRect(i);
+							if (!rect.isEmpty() && iv->viewport()->rect().intersects(rect)
+							    && plain(i.data().toString()) == text
+							    && (contains.isEmpty()
+							        || i.data(Qt::ToolTipRole).toString().contains(contains)))
+								hits << QJsonObject{{"class", w->metaObject()->className()},
+								                    {"name", w->objectName()},
+								                    {"title", QString()}, {"text", i.data().toString()},
+								                    {"box", box(iv->viewport(), rect)}};
+							if (tv && tv->isExpanded(i)) walk(i);
+						}
+					};
+					if (iv->isVisible()) walk(iv->rootIndex());
+					continue;
+				}
+				if (auto *le = qobject_cast<QLineEdit *>(w)) {
+					// a text field by the hint it shows when empty
+					if (le->isVisible() && plain(le->placeholderText()) == text)
+						hits << QJsonObject{{"class", "QLineEdit"}, {"name", w->objectName()},
+						                    {"title", QString()}, {"text", le->placeholderText()},
+						                    {"box", box(le, le->rect())}};
 					continue;
 				}
 				if (auto *lw = qobject_cast<QListWidget *>(w)) {
