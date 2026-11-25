@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Prototype video (local branch, not a pull request) for discussion #1878,
+# item C8: a folio can say what kind of document it is (IEC 61355, e.g. FS),
+# in "Document kind (&):" of the sheet properties; title blocks show it as
+# %{document_kind}. The fixture document-kind.qet beside this file has two
+# sheets and an embedded title block template with a "Kind" cell.
+title: Document kind
+summary: A sheet can say what kind of document it is, as an IEC 61355 code such as FS.
+fixture: document-kind.qet
+icon: Sheet properties
+thumbnail: {before: 2}
+
+steps:
+  - title: Document kind
+    sub: "Discussion #1878, item C8: document kind"
+    hold: 4
+
+  - chapter: "A sheet can say what kind of document it is: an IEC 61355 code"
+  - caption: "This title block has a Kind cell. It is empty"
+  - focus: {widget: {class: QGraphicsView}}
+    secs: 6
+  - hold: 4
+
+  - chapter: "Open {path:Sheet properties}"
+  - menu: Sheet properties
+  - wait_for: {dialog: Sheet properties}
+  - hold: 3
+  - caption: "Type FS in Document kind (&)"
+  - click: {widget: {class: QLineEdit, name: m_document_kind_le}}
+  - type: "FS"
+  - hold: 4
+  - click: {widget: {class: QPushButton, text: OK}}
+  - wait_for: {dialog_closed: Sheet properties}
+
+  - chapter: "The title block shows it: Kind FS (variable document_kind)"
+  - focus: {widget: {class: QGraphicsView}}
+    secs: 7
+  - hold: 6
+  - caption: "A sheet without it saves as before"
+  - hold: 6
+  - end_caption:
+
+  - title: Document kind
+    sub: "Discussion #1878, item C8: document kind"
+    hold: 3
+
+expect:
+  - saved_text: 'document_kind="FS"'
+  - saved_text: '<diagram (?:(?!document_kind)[^>])*order="2"(?:(?!document_kind)[^>])*>'

@@ -1,0 +1,73 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Prototype video (local branch, not a pull request) for discussion #1878,
+# item C7 (structure boxes): a structure box can carry its own "Higher-level
+# function (==)" and "Higher-level location (++)", which go over the folio's
+# for the symbols inside the box, field by field. The fixture
+# higher-levels-box.qet beside this file has one sheet, "Panel CP1" (plant
+# FACTORY, location CP1, == A1, ++ S1) with K1 outside and K2 inside a
+# structure box of no place of its own; designations are shown in full, so
+# both read ==A1=FACTORY++S1+CP1-K1 / -K2.
+#
+# `expect:` checks the saved project: the box's <shape> carries
+# higher_plant="A2" (the fixture has none) and the folio keeps A1. The steps
+# check the rest: the Higher-level function (==) field must exist to be typed in.
+title: Higher levels of a structure box
+summary: A structure box can have its own Higher-level function (==) and location (++) for the symbols inside it.
+fixture: higher-levels-box.qet
+icon: Add a structure box
+thumbnail: {before: 2}
+
+setup:
+  - frame: {rect: [80, 200, 1020, 260], fill: 0.9}
+
+steps:
+  - title: Higher levels of a structure box
+    sub: "Prototype for discussion #1878, item C7 (structure boxes)"
+    hold: 4
+
+  - chapter: "The sheet has Higher-level function (==) A1 and location (++) S1"
+  - caption: "K1 and K2 both read ==A1=FACTORY++S1+CP1"
+  - focus: {rect: [80, 280, 1020, 80]}
+    secs: 7
+  - hold: 5
+
+  - chapter: "K2 is inside a structure box: double-click its edge"
+  - click: [480, 270]
+    double: true
+  - wait_for: {dialog: Edit the properties of a structure box}
+  - hold: 2
+  - highlight: {widget: {class: QLineEdit, name: higherPlantEdit, title: "Edit the properties of a structure box"}}
+    secs: 3
+  - caption: "Higher-level function (==): left empty, it is the sheet's"
+  - hold: 2
+
+  - chapter: "Type A2 in Higher-level function (==)"
+  - click: {widget: {class: QLineEdit, name: higherPlantEdit, title: "Edit the properties of a structure box"}}
+  - type: "A2"
+  - hold: 2
+  - click: {widget: {class: QPushButton, text: Apply}}
+  - wait_for: {dialog_closed: Edit the properties of a structure box}
+
+  - chapter: "K2 now reads ==A2=FACTORY++S1+CP1-K2"
+  - focus: {rect: [80, 280, 1020, 80]}
+    secs: 8
+  - hold: 6
+  - caption: "K1, outside the box, keeps ==A1"
+  - hold: 5
+  - caption: "The box says its levels too"
+  - focus: {rect: [460, 220, 300, 90]}
+    secs: 5
+  - hold: 4
+  - caption: "Only the fields you fill in go over the sheet's"
+  - hold: 5
+  - end_caption:
+
+  - title: Higher levels of a structure box
+    sub: "Prototype for discussion #1878, item C7 (structure boxes)"
+    hold: 3
+
+expect:
+  - saved_text: '<shape [^>]*higher_plant="A2"[^>]*structure_box="true"|<shape [^>]*structure_box="true"[^>]*higher_plant="A2"'
+  - saved_text: 'higher_plant="A2"'
+  - saved_text: 'higher_plant="A1"'
+  - shapes: {type: Rectangle, count: 1}

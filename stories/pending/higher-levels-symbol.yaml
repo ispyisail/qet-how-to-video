@@ -1,0 +1,75 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Prototype video (local branch, not a pull request) for discussion #1878,
+# item C7 (a symbol's own levels): a symbol's own information can hold
+# "Higher-level function (==)" and "Higher-level location (++)", which go
+# over its structure box's and its folio's, field by field. The fixture
+# higher-levels-symbol.qet beside this file has one sheet, "Panel CP1" (plant
+# FACTORY, location CP1, == A1, ++ S1) with a structure box whose own
+# Higher-level function (==) is A2, around K5 and K6; designations are shown
+# in full, so both read ==A2=FACTORY++S1+CP1-K5 / -K6.
+#
+# The expect block checks the saved project: K5's element information (in
+# project.sqlite) holds higher_plant A3 (the fixture holds none, K6 gets none),
+# the box keeps A2 and the folio A1. The line edit is found by the label of its
+# row ("row_label", a probe change in this repository) inside the "Element
+# properties" dialog, never by a bare object name (the side panel has the
+# same ones).
+title: Higher levels of a symbol
+summary: A symbol's own information can hold a Higher-level function (==) and location (++), which go over its structure box's and its sheet's.
+fixture: higher-levels-symbol.qet
+icon: Add a structure box
+thumbnail: {before: 2}
+
+setup:
+  - frame: {rect: [80, 200, 1020, 260], fill: 0.9}
+
+steps:
+  - title: Higher levels of a symbol
+    sub: "Prototype for discussion #1878, item C7 (a symbol's own levels)"
+    hold: 4
+
+  - chapter: "K5 and K6 are inside a structure box with Higher-level function (==) A2"
+  - caption: "Both read ==A2=FACTORY++S1+CP1"
+  - focus: {rect: [480, 280, 600, 80]}
+    secs: 7
+  - hold: 5
+
+  - chapter: "Double-click K5 to open its Element properties"
+  - click: [620, 320]
+    double: true
+  - wait_for: {dialog: Element properties}
+  - hold: 2
+  - click: {widget: {class: QTabBar, text: Information, title: Element properties}}
+  - hold: 2
+  - highlight: {widget: {class: QLineEdit, name: line_edit, row_label: "Higher-level function (==)", title: Element properties}}
+    secs: 3
+  - caption: "Higher-level function (==): left empty, it is the box's"
+  - hold: 2
+
+  - chapter: "Type A3 in Higher-level function (==)"
+  - click: {widget: {class: QLineEdit, name: line_edit, row_label: "Higher-level function (==)", title: Element properties}}
+  - type: "A3"
+  - hold: 2
+  - click: {widget: {class: QPushButton, text: Apply, title: Element properties}}
+  - wait_for: {dialog_closed: Element properties}
+
+  - chapter: "K5 now reads ==A3=FACTORY++S1+CP1-K5"
+  - focus: {rect: [480, 280, 600, 80]}
+    secs: 8
+  - hold: 6
+  - caption: "K6 keeps ==A2"
+  - hold: 5
+  - caption: "Only the fields you fill in go over the box's"
+  - hold: 5
+  - end_caption:
+
+  - title: Higher levels of a symbol
+    sub: "Prototype for discussion #1878, item C7 (a symbol's own levels)"
+    hold: 3
+
+expect:
+  # element information is in project.sqlite: uuid, row number, name, value
+  # side by side; K5 is the element ...bcda1e, K6 ...bcda0d
+  - saved_text: '(?s)bcda1e\}.{0,3}higher_plantA3'
+  - saved_text: '<shape [^>]*higher_plant="A2"'
+  - saved_text: 'higher_plant="A1"'

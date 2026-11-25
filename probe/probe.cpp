@@ -345,6 +345,17 @@ private:
 				continue;
 			if (!title.isEmpty() && !w->window()->windowTitle().contains(title))
 				continue;
+			// a field of a form row by the text of the label of its row: the
+			// row is the widget that holds both (a QLabel named label_)
+			if (req.contains("row_label")) {
+				bool ok = false;
+				const QString want = plain(req["row_label"].toString());
+				for (QWidget *p = w->parentWidget(); p && !ok && p != w->window(); p = p->parentWidget())
+					if (auto *l = p->findChild<QLabel *>(QStringLiteral("label_")))
+						ok = plain(l->text()) == want;
+				if (!ok)
+					continue;
+			}
 			// a tab of a tab bar, or an entry of a list, by its text
 			if (!text.isEmpty()) {
 				if (auto *tb = qobject_cast<QTabBar *>(w)) {

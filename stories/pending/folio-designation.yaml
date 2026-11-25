@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Prototype video (local branch, not a pull request) for discussion #1878,
+# item C8, the & prefix: a sheet's full name is =plant+location&kind/number
+# (IEC 81346 / 61355), shown by title blocks as %{folio_designation}. It is
+# computed, never saved. The fixture folio-designation.qet beside this file
+# has two sheets, the first with plant FACTORY, location CP1 and no document
+# kind, and an embedded title block template whose cell shows
+# "Sheet: %{folio_designation}".
+title: Sheet name with &
+summary: A sheet's full name is =plant+location&kind/number, for example =FACTORY+CP1&EFS/1.
+fixture: folio-designation.qet
+icon: Sheet properties
+thumbnail: {before: 2}
+
+steps:
+  - title: Sheet name with &
+    sub: "Discussion #1878, item C8: & in the sheet name"
+    hold: 4
+
+  - chapter: "A sheet's full name: =plant+location&kind/number"
+  - caption: "This title block shows it with the variable folio_designation"
+  - focus: {widget: {class: QGraphicsView}}
+    secs: 6
+  - caption: "It reads =FACTORY+CP1/1: no document kind yet"
+  - hold: 4
+
+  - chapter: "Open {path:Sheet properties}"
+  - menu: Sheet properties
+  - wait_for: {dialog: Sheet properties}
+  - hold: 3
+  - caption: "Type EFS in Document kind (&)"
+  - click: {widget: {class: QLineEdit, name: m_document_kind_le}}
+  - type: "EFS"
+  - hold: 4
+  - click: {widget: {class: QPushButton, text: OK}}
+  - wait_for: {dialog_closed: Sheet properties}
+
+  - chapter: "The name now reads =FACTORY+CP1&EFS/1"
+  - focus: {widget: {class: QGraphicsView}}
+    secs: 7
+  - hold: 4
+  - caption: "Nothing new is saved: it is worked out"
+  - hold: 6
+  - end_caption:
+
+  - title: Sheet name with &
+    sub: "Discussion #1878, item C8: & in the sheet name"
+    hold: 3
+
+expect:
+  - saved_text: 'document_kind="EFS"'

@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Video for discussion #1878, item C8 (agreed in #1295, rule 2): the project's
+# revision history is one list in Project properties, on a "Revisions" page.
+# The fixture revision-list.qet is one empty folio with NO <revisions>.
+#
+# `expect:` checks the saved project: <revisions> holds revision A and B with
+# their descriptions (the fixture has none); the date is only checked for its
+# format (ISO 8601), since it is today's date.
+title: The project's revision list
+summary: "Project properties has a Revisions page: add revisions with their date, description, author and approver."
+fixture: revision-list.qet
+icon: Project properties
+thumbnail: {before: 2}
+
+steps:
+  - title: The project's revision list
+    sub: "Discussion #1878, item C8: revision list"
+    hold: 3
+
+  - chapter: "The project's revision history: {path:Project properties} ▸ Revisions"
+  - menu: Project properties
+  - wait_for: {dialog: Project properties}
+  - hold: 1
+  - click: {widget: {class: QListWidget, text: Revisions, title: "Project properties"}}
+  - hold: 3
+
+  - chapter: "Add a revision: it is dated today"
+  - click: {widget: {class: QPushButton, name: addRevision, title: "Project properties"}}
+  - hold: 1
+  - type: "A"
+  - key: Tab
+  - hold: 0.5
+  - key: Tab
+  - type: "First issue"
+  - key: Tab
+  - type: "SH"
+  - hold: 0.5
+
+  - chapter: "Revision, date, description, author, approved by"
+  - click: {widget: {class: QPushButton, name: addRevision, title: "Project properties"}}
+  - hold: 1
+  - type: "B"
+  - key: Tab
+  - key: Tab
+  - type: "Pump P2 added"
+  - key: Tab
+  - type: "SH"
+  - key: Tab
+  - type: "MK"
+  - hold: 4
+
+  - chapter: "Saved with the project; a project without revisions saves as before"
+  - click: {widget: {class: QPushButton, text: OK, title: "Project properties"}}
+  - wait_for: {dialog_closed: Project properties}
+  - hold: 3
+  - end_caption:
+
+  - title: The project's revision list
+    sub: "Discussion #1878, item C8: revision list"
+    hold: 2
+
+expect:
+  - saved_text: '<revisions>\s*<revision (?=[^>]*\brevision="A")(?=[^>]*author="SH")[^>]*description="First issue"'
+  - saved_text: '<revision (?=[^>]*\brevision="B")(?=[^>]*approver="MK")[^>]*description="Pump P2 added"'
+  - saved_text: '<revision [^>]*date="\d{4}-\d{2}-\d{2}"'

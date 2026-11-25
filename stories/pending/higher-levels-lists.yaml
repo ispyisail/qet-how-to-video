@@ -1,0 +1,81 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Prototype video (local branch, not a pull request), follow-up to #1992,
+# discussion #1878 item C7. A folio's "Higher-level function (==)" and
+# "Higher-level location (++)" now reach the ids of terminal strips and
+# cables, and the Place list of Project > Reports. The fixture
+# higher-levels-lists.qet beside this file has one sheet, "Panel CP1" (plant
+# FACTORY, location CP1, == A1, ++ S1) with K1, a terminal strip X1 (X1:1,
+# X1:2) and a cable W1 drawn on it; designations are shown in full.
+#
+# The `expect:` block only reads the saved project, which holds none of the
+# new ids (they are views). So the checks that matter are steps: each
+# `click: {widget: {name: reportTable, text: ...}}` selects the row whose first
+# column is exactly that id, and the story stops if no such row is shown.
+title: Higher levels in the lists
+summary: A sheet's higher-level function (==) and location (++) reach terminal strip ids, cable ids and the Place list of the reports.
+fixture: higher-levels-lists.qet
+icon: Reports...
+thumbnail: {before: 2}
+
+setup:
+  - frame: {rect: [80, 120, 1020, 400], fill: 0.9}
+
+steps:
+  - title: Higher levels in the lists
+    sub: "Follow-up to #1992, discussion #1878 item C7"
+    hold: 4
+
+  - chapter: "One sheet: plant FACTORY, location CP1"
+  - caption: "Its Higher-level function (==) is A1 and its Higher-level location (++) is S1"
+  - focus: {rect: [80, 220, 1020, 220]}
+    secs: 6
+  - hold: 4
+
+  - chapter: "Open {path:Reports...}"
+  - menu: Reports...
+  - wait_for: {dialog: Reports}
+  - hold: 2
+
+  - chapter: "The Place list has the higher levels"
+  - click: {widget: {name: reportPlace}}
+  - hold: 3
+  - click: {combo_item: "==A1=FACTORY++S1+CP1"}
+  - hold: 1
+
+  - chapter: "Terminal list: strip X1"
+  - click: {widget: {name: reportChoice}}
+  - click: {combo_item: "Terminal list"}
+  - hold: 1
+  - click: {widget: {class: QTableWidget, name: reportTable, text: "==A1=FACTORY++S1+CP1-X1"}}
+  - caption: "The strip is ==A1=FACTORY++S1+CP1-X1"
+  - hold: 5
+
+  - chapter: "Cable list: cable W1"
+  - click: {widget: {name: reportChoice}}
+  - click: {combo_item: "Cable list"}
+  - hold: 1
+  - click: {widget: {class: QTableWidget, name: reportTable, text: "==A1=FACTORY++S1+CP1-W1"}}
+  - caption: "The cable is ==A1=FACTORY++S1+CP1-W1"
+  - hold: 5
+
+  - chapter: "Parts list: K1"
+  - click: {widget: {name: reportChoice}}
+  - click: {combo_item: "Parts list"}
+  - hold: 1
+  - click: {widget: {class: QTableWidget, name: reportTable, text: "==A1=FACTORY++S1+CP1-K1"}}
+  - caption: "A place limits a list to the designations that start with it"
+  - hold: 5
+  - end_caption:
+
+  - click: {widget: {class: QPushButton, text: Close}}
+  - wait_for: {dialog_closed: Reports}
+
+  - title: Higher levels in the lists
+    sub: "Follow-up to #1992, discussion #1878 item C7"
+    hold: 3
+
+expect:
+  - saved_text: 'higher_plant="A1"'
+  - saved_text: 'higher_location="S1"'
+  - saved_text: 'designation="W1"'
+  - saved_text: 'FACTORYCP1X1'

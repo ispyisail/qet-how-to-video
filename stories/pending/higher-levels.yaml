@@ -1,0 +1,60 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Prototype video (local branch, not a pull request) for discussion #1878,
+# item C7: a folio can carry the IEC 81346 levels above its plant and
+# location, "Higher-level function (==)" and "Higher-level location (++)",
+# and the designations of its symbols include them. The fixture
+# higher-levels.qet beside this file has one sheet, "Panel CP1" (plant
+# FACTORY, location CP1) with K1 on it; the project shows designations in
+# full, so K1 reads =FACTORY+CP1-K1.
+title: Higher-level function and location
+summary: A sheet can carry the levels above its plant and location; symbol designations include them.
+fixture: higher-levels.qet
+icon: Add a structure box
+thumbnail: {before: 2}
+
+setup:
+  - frame: {rect: [80, 200, 1020, 260], fill: 0.9}
+
+steps:
+  - title: Higher-level function and location
+    sub: "Prototype for discussion #1878, item C7"
+    hold: 4
+
+  - chapter: "K1 is on a sheet of plant FACTORY, location CP1"
+  - caption: "The project shows full designations: K1 reads =FACTORY+CP1-K1"
+  - focus: {rect: [80, 280, 1020, 80]}
+    secs: 7
+  - hold: 6
+
+  - chapter: "Open {path:Sheet properties}"
+  - menu: Sheet properties
+  - wait_for: {dialog: Sheet properties}
+  - hold: 3
+  - click: {widget: {class: QLineEdit, name: m_higher_plant_le}}
+  - type: "A1"
+  - caption: "Higher-level function (==): A1"
+  - hold: 3
+  - click: {widget: {class: QLineEdit, name: m_higher_location_le}}
+  - type: "S1"
+  - caption: "Higher-level location (++): S1"
+  - hold: 3
+  - click: {widget: {class: QPushButton, text: OK}}
+  - wait_for: {dialog_closed: Sheet properties}
+
+  - chapter: "K1 now reads ==A1=FACTORY++S1+CP1-K1"
+  - focus: {rect: [80, 280, 1020, 80]}
+    secs: 9
+  - hold: 6
+  - caption: "A new sheet takes these levels from the sheet before it"
+  - hold: 7
+  - caption: "A project without them saves as before"
+  - hold: 7
+  - end_caption:
+
+  - title: Higher-level function and location
+    sub: "Prototype for discussion #1878, item C7"
+    hold: 3
+
+expect:
+  - saved_text: 'higher_plant="A1"'
+  - saved_text: 'higher_location="S1"'

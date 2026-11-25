@@ -1,0 +1,76 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Video for discussion #1878, item C8 (agreed in #1295, rule 2: "a table on the
+# folio prints it"): the project's revision history can be printed on a sheet as
+# a table, Lists > Add a revision table. The fixture revision-table.qet is one
+# empty folio whose project ALREADY has revisions A and B in <revisions> and no
+# table. The table is saved as a table element whose project_data_base_model has
+# the identifier "revisions".
+#
+# `expect:` fails without the feature: the fixture has no table model, so the
+# saved "revisions" identifier exists only if the table was added.
+# Revision C is added after the table is on the sheet; the table follows.
+title: A revision table on the sheet
+summary: "Lists > Add a revision table puts the project's revision history on the sheet, one row per revision."
+fixture: revision-table.qet
+icon: Project properties
+thumbnail: {before: 2}
+
+steps:
+  - title: A revision table on the sheet
+    sub: "Discussion #1878, item C8: revision table"
+    hold: 4
+
+  - chapter: "The project has two revisions ({path:Project properties} ▸ Revisions)"
+  - menu: Project properties
+  - wait_for: {dialog: Project properties}
+  - click: {widget: {class: QListWidget, text: Revisions, title: "Project properties"}}
+  - hold: 3
+  - click: {widget: {class: QPushButton, text: Cancel, title: "Project properties"}}
+  - wait_for: {dialog_closed: Project properties}
+  - hold: 1
+
+  - chapter: "Add a revision table: {path:Add a revision table}"
+  - menu: Add a revision table
+  - wait_for: {dialog: Add a revision table}
+  - hold: 3
+  - click: {widget: {class: QPushButton, text: OK, title: "Add a revision table"}}
+  - wait_for: {dialog_closed: Add a revision table}
+  - hold: 1
+
+  - chapter: "One row per revision: revision, date, description, author, approved by"
+  - focus: {rect: [0, 0, 1020, 400]}
+    secs: 5
+  - hold: 2
+
+  - chapter: "Add a revision and the table follows"
+  - menu: Project properties
+  - wait_for: {dialog: Project properties}
+  - click: {widget: {class: QListWidget, text: Revisions, title: "Project properties"}}
+  - hold: 1
+  - click: {widget: {class: QPushButton, name: addRevision, title: "Project properties"}}
+  - hold: 1
+  - type: "C"
+  - key: Tab
+  - key: Tab
+  - type: "Cable list"
+  - key: Tab
+  - type: "SH"
+  - key: Tab
+  - type: "MK"
+  - key: Tab
+  - hold: 1
+  - click: {widget: {class: QPushButton, text: OK, title: "Project properties"}}
+  - wait_for: {dialog_closed: Project properties}
+  - focus: {rect: [0, 0, 1020, 400]}
+    secs: 6
+  - hold: 3
+  - end_caption:
+
+  - title: A revision table on the sheet
+    sub: "Discussion #1878, item C8: revision table"
+    hold: 3
+
+expect:
+  - saved_text: '<identifier>revisions</identifier>'
+  - saved_text: '<revision [^>]*revision="B"[^>]*description="Pump P2 added"|<revision [^>]*description="Pump P2 added"[^>]*revision="B"'
+  - saved_text: '<revision [^>]*revision="C"[^>]*description="Cable list"|<revision [^>]*description="Cable list"[^>]*revision="C"'

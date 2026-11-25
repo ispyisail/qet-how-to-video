@@ -1,0 +1,75 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Prototype video (local branch, not a pull request) for discussion #1878,
+# item C7 (structure boxes). Companion of higher-levels-box.yaml, which only
+# showed full designations. Here the project shows SHORT designations: a
+# structure box (plant FACTORY, location CP1, no higher level yet) gives the
+# place, so its symbols read -S1, -S2, -S3. Giving the box Higher-level
+# function (==) A1 changes the box's name, not the short names. Only the full
+# reference designation shows their real full name, ==A1=FACTORY+CP1-S1.
+#
+# `expect:` checks the saved project: the box's <shape> carries
+# higher_plant="A1" (the fixture has none) and the project ends showing full
+# designations (the fixture saves "short").
+title: Short names inside a structure box
+summary: A structure box gives the place, so its symbols read short (-S1); the full name keeps the box's levels.
+fixture: higher-levels-box-short.qet
+icon: Add a structure box
+thumbnail: {before: 2}
+
+setup:
+  - frame: {rect: [60, 200, 1000, 260], fill: 0.9}
+
+steps:
+  - title: Short names inside a structure box
+    sub: "Prototype for discussion #1878, item C7 (structure boxes)"
+    hold: 4
+
+  - chapter: "A structure box gives the place: =FACTORY+CP1"
+  - focus: {rect: [60, 220, 1000, 200]}
+    secs: 6
+  - caption: "Inside it the symbols read -S1, -S2, -S3"
+  - hold: 6
+
+  - chapter: "Give the box Higher-level function (==) A1"
+  - click: [100, 275]
+    double: true
+  - wait_for: {dialog: Edit the properties of a structure box}
+  - hold: 2
+  - click: {widget: {class: QLineEdit, name: higherPlantEdit, title: "Edit the properties of a structure box"}}
+  - type: "A1"
+  - hold: 2
+  - click: {widget: {class: QPushButton, text: Apply}}
+  - wait_for: {dialog_closed: Edit the properties of a structure box}
+
+  - chapter: "The box reads ==A1=FACTORY+CP1; the symbols stay short"
+  - focus: {rect: [60, 220, 1000, 200]}
+    secs: 8
+  - hold: 6
+
+  - chapter: "Their full name has the box's levels: open {path:Project properties}"
+  - menu: Project properties
+  - wait_for: {dialog: Project properties}
+  - hold: 1
+  - highlight: {widget: {class: QComboBox, name: designationDisplay, title: "Project properties"}}
+    secs: 3
+  - click: {widget: {class: QComboBox, name: designationDisplay, title: "Project properties"}}
+  - hold: 1.5
+  - click: {combo_item: "Full reference designation, IEC 81346 (=A1+B2-K1)"}
+  - hold: 1.5
+  - click: {widget: {class: QPushButton, text: OK}}
+  - wait_for: {dialog_closed: Project properties}
+
+  - chapter: "Full name: ==A1=FACTORY+CP1-S1"
+  - focus: {rect: [60, 220, 1000, 200]}
+    secs: 8
+  - hold: 6
+  - end_caption:
+
+  - title: Short names inside a structure box
+    sub: "Prototype for discussion #1878, item C7 (structure boxes)"
+    hold: 3
+
+expect:
+  - saved_text: '<shape [^>]*higher_plant="A1"[^>]*structure_box="true"|<shape [^>]*structure_box="true"[^>]*higher_plant="A1"'
+  - saved_text: '<designation_display shown="full"/>'
+  - shapes: {type: Rectangle, count: 1}
