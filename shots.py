@@ -27,13 +27,6 @@ from PIL import Image
 HERE = Path(__file__).resolve().parent
 
 
-def _free_display() -> int:
-    for n in range(95, 140):
-        if not Path(f"/tmp/.X11-unix/X{n}").exists() and not Path(f"/tmp/.X{n}-lock").exists():
-            return n
-    raise RuntimeError("no free X display")
-
-
 class Session:
     def __init__(self, binary, project=None, conf: dict | None = None, out=None,
                  size=(1400, 900), args=(), env: dict | None = None, setup=None,
@@ -107,15 +100,22 @@ class Session:
         return e
 
     def start(self, wait_collection=True, dismiss=True):
-        self.display = _free_display()
         w, h = self.size
+        # Xvfb picks a free display itself and writes its number to a pipe
+        # once it listens (-displayfd). Picking one here first and starting
+        # Xvfb on it raced with any other session started at the same time:
+        # both took the same number, one Xvfb failed, and its QElectroTech
+        # ran on no screen of its own ("no window 'QElectroTech'; have []").
+        rfd, wfd = os.pipe()
         self.procs.append(subprocess.Popen(
-            ["Xvfb", f":{self.display}", "-screen", "0", f"{w}x{h}x24", "-nolisten", "tcp"],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
-        for _ in range(50):
-            if Path(f"/tmp/.X11-unix/X{self.display}").exists():
-                break
-            time.sleep(0.1)
+            ["Xvfb", "-displayfd", str(wfd), "-screen", "0", f"{w}x{h}x24", "-nolisten", "tcp"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, pass_fds=(wfd,)))
+        os.close(wfd)
+        with os.fdopen(rfd) as r:
+            number = r.readline().strip()
+        if not number.isdigit():
+            raise RuntimeError("Xvfb did not start (no display number from -displayfd)")
+        self.display = int(number)
         cmd = ["openbox"] + (["--config-file", str(self.openbox_rc)] if self.openbox_rc else [])
         self.procs.append(subprocess.Popen(cmd, env=self.env,
                                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
