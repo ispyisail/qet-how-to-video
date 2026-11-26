@@ -124,7 +124,18 @@ class Session:
         cmd = [str(self.binary)] + self.args + ([str(self.project)] if self.project else [])
         self.qet = subprocess.Popen(cmd, env={**self.env, **self.app_env}, stdout=self.log, stderr=subprocess.STDOUT)
         self.procs.append(self.qet)
-        self.main = self.wait_window(self.main_name, timeout=40)
+        try:
+            self.main = self.wait_window(self.main_name, timeout=40)
+        except TimeoutError as e:
+            # Say what QElectroTech was doing: its log is deleted with the
+            # session, and without it a failed launch cannot be told apart
+            # from a slow one.
+            rc = self.qet.poll()
+            state = "still running" if rc is None else f"exited with {rc}"
+            self.log.flush()
+            tail = (self.dir / "qet.log").read_text(errors="replace").splitlines()[-15:]
+            raise TimeoutError(f"{e}; QElectroTech {state}; last lines of its log:\n"
+                               + "\n".join(tail)) from None
         self.run("xdotool", "windowsize", self.main, str(w), str(h), "windowmove", self.main, "0", "0")
         time.sleep(1)
         if dismiss:
