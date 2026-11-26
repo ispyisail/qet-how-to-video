@@ -3,8 +3,8 @@
 # own, which can be dragged anywhere and given a size. The fixture
 # structure-box-name.qet beside this file (a copy of
 # plant-location-from-box.qet) has one sheet with a structure box of
-# location CP10 from 340, 240 to 1060, 420; its name, "+CP10", stands inside
-# the box's top left corner.
+# location CP10 from 340, 240 to 1060, 420; its name, "+CP10", stands just
+# above the box's top left corner (the default since #1877).
 title: Move and size a structure box's name
 summary: Drag the name of a structure box where it reads best, and set its size.
 fixture: structure-box-name.qet
@@ -19,20 +19,20 @@ steps:
     sub: "Its name is a text of its own"
     hold: 4
 
-  - chapter: "A structure box says its name inside its top left corner"
-  - focus: {rect: [320, 220, 260, 80]}
+  - chapter: "A structure box says its name above its top left corner"
+  - focus: {rect: [320, 200, 260, 80]}
     secs: 4
   - hold: 2
 
-  - chapter: "Drag the name where it reads best: above the box"
-  - drag: {from: [356, 249], to: [356, 214]}
+  - chapter: "Drag the name where it reads best: inside the box"
+  - drag: {from: [356, 230], to: [416, 262]}
   - hold: 1.5
-  - focus: {rect: [320, 180, 260, 100]}
+  - focus: {rect: [320, 210, 260, 100]}
     secs: 4
   - hold: 2
 
   - chapter: "Double-click it to give it a size"
-  - click: [356, 214]
+  - click: [416, 262]
     double: true
   - wait_for: {dialog: Edit the properties of a structure box}
   - hold: 1
@@ -45,7 +45,7 @@ steps:
   - hold: 1.5
   - click: {widget: {class: QPushButton, text: Apply}}
   - wait_for: {dialog_closed: Edit the properties of a structure box}
-  - focus: {rect: [320, 170, 300, 110]}
+  - focus: {rect: [320, 210, 300, 110]}
     secs: 5
   - hold: 2
 

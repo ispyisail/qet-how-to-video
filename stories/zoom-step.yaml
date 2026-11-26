@@ -28,6 +28,8 @@ steps:
   - chapter: "Open {path:Configure QElectroTech}"
   - menu: Configure QElectroTech
   - wait_for: {dialog: Configure QElectroTech}
+  - click: {widget: {class: QTabBar, text: Mouse and input}}
+  - hold: 1
   - caption: "Zoom step: 0 keeps the factor of 1.15"
   - highlight: {widget: {name: m_zoom_step_sb}}
     secs: 2.5
