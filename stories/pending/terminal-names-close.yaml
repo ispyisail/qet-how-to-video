@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Bugtracker #349, PR #2006: terminals 10 apart, pointing south, with their
+# names shown. The box of each name reached over the terminals beside it and
+# took their clicks, so a wire could not be started from some of them.
+# The fixture terminal-names-close.qet beside this file has a connector X1
+# with four named terminals (upright names) 10 apart, above a motor M1.
+title: Wire terminals that are close together
+summary: Every terminal can be clicked to start a wire, even with its name shown beside its neighbours.
+pr: 2006
+fixture: terminal-names-close.qet
+thumbnail: {before: 2}
+
+setup:
+  - frame: {rect: [250, 140, 100, 230], fill: 0.8}
+
+steps:
+  - title: Wire terminals that are close together
+    sub: "Names shown, terminals 10 apart"
+    hold: 3
+
+  - chapter: "Four terminals, 10 apart, names shown"
+  - focus: {rect: [280, 150, 40, 75]}
+    secs: 3
+  - hold: 3
+  - caption: "Each name is wider than the gap to the next terminal"
+  - hold: 3
+
+  - chapter: "Draw a wire from every terminal"
+  - drag: {from: [285, 218], to: [285, 321]}
+  - hold: 1
+  - drag: {from: [295, 218], to: [295, 321]}
+  - hold: 1
+  - drag: {from: [305, 218], to: [305, 321]}
+  - hold: 1
+  - drag: {from: [315, 218], to: [315, 321]}
+  - hold: 1
+  - caption: "All four take their wire: only the terminal takes the click, not its name"
+  - focus: {rect: [270, 190, 60, 140]}
+    secs: 5
+  - hold: 5
+  - end_caption:
+
+  - title: Wire terminals that are close together
+    sub: "Bugtracker #349"
+    hold: 3
+
+# Each terminal of X1 is the end of a wire. Only the wires name terminal
+# uuids in the saved files the check reads (the symbol definition is not read).
+expect:
+  - saved_text: '\{0ecec143-ef4d-46a3-9e30-5e902ce6683a\}'
+  - saved_text: '\{bbadefce-3b44-4216-8193-ffbf1fc91bc0\}'
+  - saved_text: '\{4606252d-fa4c-469c-9ae6-349a181a8e43\}'
+  - saved_text: '\{e7e60a1a-0424-4e13-8bc4-dd8d8442a7d9\}'
