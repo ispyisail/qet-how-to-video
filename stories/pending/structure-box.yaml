@@ -1,0 +1,113 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Video for "Add a structure box" (pull request #1846, issue #1845): the whole
+# naming workflow of IEC 81346 reference designations. A project is divided
+# into plants (=, e.g. a production line) and locations (+, e.g. a control
+# cabinet); each sheet belongs to one of each, a new sheet starts with the
+# plant, and a device shows them only when they differ from its sheet
+# (%{structure_id}). A structure box is an area for the devices of another
+# location. The fixture structure-box.qet beside this file has one sheet,
+# "Panel CP1", with an empty title block, K1 of =FACTORY+CP1 and K10, K11, K12
+# of =FACTORY+CP10.
+title: Structure box
+summary: The plant and location of a sheet, then a structure box, keep the names of symbols short.
+fixture: structure-box.qet
+icon: Add a structure box
+pr: 1846
+thumbnail: {before: 2}
+
+setup:
+  - frame: {rect: [80, 200, 1020, 260], fill: 0.9}
+
+steps:
+  - title: Structure box
+    sub: "Plant, location and box: short names"
+    hold: 4
+
+  - chapter: "A project has plants (=) and locations (+): a plant, a cabinet"
+  - hold: 3
+  - caption: "This sheet has no plant or location yet: every symbol shows its whole name"
+  - focus: {rect: [80, 280, 1020, 80]}
+    secs: 5
+  - hold: 4
+
+  - chapter: "The sheet belongs to plant FACTORY and cabinet CP1: {path:Sheet properties}"
+  - menu: Sheet properties
+  - wait_for: {dialog: Sheet properties}
+  - click: {widget: {class: QLineEdit, name: m_plant}}
+  - type: "FACTORY"
+  - click: {widget: {class: QLineEdit, name: m_loc}}
+  - type: "CP1"
+  - hold: 1
+  - click: {widget: {class: QPushButton, text: OK}}
+  - wait_for: {dialog_closed: Sheet properties}
+  - caption: "A name shows only what differs from its sheet: K1 is -K1, the CP10 devices keep +CP10"
+  - focus: {rect: [80, 280, 1020, 80]}
+    secs: 5
+  - hold: 4
+
+  - chapter: "Every new sheet starts with the plant: {path:Project properties}, New sheet"
+  - menu: Project properties
+  - wait_for: {dialog: Project properties}
+  - click: {widget: {class: QListWidget, text: New sheet}}
+  - hold: 1
+  - click: {widget: {class: QLineEdit, name: m_plant}}
+  - type: "FACTORY"
+  - hold: 1.5
+  - click: {widget: {class: QPushButton, text: OK}}
+  - wait_for: {dialog_closed: Project properties}
+
+  - chapter: "Add a sheet: its plant is already FACTORY"
+  - menu: Add a sheet
+  - hold: 1.5
+  - menu: Sheet properties
+  - wait_for: {dialog: Sheet properties}
+  - highlight: {widget: {class: QLineEdit, name: m_plant}}
+    secs: 3
+  - hold: 2.5
+  - caption: "A cabinet often takes several sheets: this one is CP1 too"
+  - click: {widget: {class: QLineEdit, name: m_loc}}
+  - type: "CP1"
+  - hold: 1
+  - click: {widget: {class: QPushButton, text: OK}}
+  - wait_for: {dialog_closed: Sheet properties}
+  - end_caption:
+
+  - chapter: "Back on sheet 1: a structure box around the CP10 devices"
+  - click: {widget: {class: QTabBar, text: "1 - Panel CP1"}}
+  - hold: 1
+  - menu: Add a structure box
+  - click: [340, 240]
+  - click: [1060, 420]
+  - key: Escape
+    pace: 1
+  - caption: "A structure box is an area for the devices of another location"
+  - hold: 2.5
+
+  - chapter: "Double-click its edge and give it the location CP10"
+  - click: [340, 270]
+    double: true
+  - wait_for: {dialog: Edit the properties of a structure box}
+  - hold: 1
+  - press: Tab
+  - type: "CP10"
+  - hold: 1.5
+  - click: {widget: {class: QPushButton, text: Apply}}
+  - wait_for: {dialog_closed: Edit the properties of a structure box}
+
+  - chapter: "Inside the box they are -K10, -K11, -K12: the box says +CP10 once"
+  - focus: {rect: [80, 230, 1020, 200]}
+    secs: 6
+  - hold: 5
+  - end_caption:
+
+  - title: Structure box
+    sub: "{path:Project properties}, {path:Sheet properties}, {path:Add a structure box}"
+    hold: 3
+
+expect:
+    # The sheets' plant and location are saved in the .qetz's database, not in
+    # its XML, so saved_text cannot see them; checked in the database after
+    # each run (both sheets plant FACTORY, location CP1)
+  - shapes: {type: Rectangle, count: 1}
+  - saved_text: 'location="CP10"[^>]*structure_box="true"'
+  - saved_text: 'DashDotLine'

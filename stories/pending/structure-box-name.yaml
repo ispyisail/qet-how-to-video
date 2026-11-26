@@ -1,0 +1,62 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Video for step 2 of #1845: the name of a structure box is a text of its
+# own, which can be dragged anywhere and given a size. The fixture
+# structure-box-name.qet beside this file (a copy of
+# plant-location-from-box.qet) has one sheet with a structure box of
+# location CP10 from 340, 240 to 1060, 420; its name, "+CP10", stands inside
+# the box's top left corner.
+title: Move and size a structure box's name
+summary: Drag the name of a structure box where it reads best, and set its size.
+fixture: structure-box-name.qet
+icon: Add a structure box
+thumbnail: {before: 2}
+
+setup:
+  - frame: {rect: [80, 160, 1020, 460], fill: 0.9}
+
+steps:
+  - title: Move and size a structure box's name
+    sub: "Its name is a text of its own"
+    hold: 4
+
+  - chapter: "A structure box says its name inside its top left corner"
+  - focus: {rect: [320, 220, 260, 80]}
+    secs: 4
+  - hold: 2
+
+  - chapter: "Drag the name where it reads best: above the box"
+  - drag: {from: [356, 249], to: [356, 214]}
+  - hold: 1.5
+  - focus: {rect: [320, 180, 260, 100]}
+    secs: 4
+  - hold: 2
+
+  - chapter: "Double-click it to give it a size"
+  - click: [356, 214]
+    double: true
+  - wait_for: {dialog: Edit the properties of a structure box}
+  - hold: 1
+  - highlight: {widget: {class: QDoubleSpinBox, name: labelSize}}
+    secs: 2.5
+  - click: {widget: {class: QDoubleSpinBox, name: labelSize}}
+  - key: ctrl+a
+    show: false
+  - type: "14"
+  - hold: 1.5
+  - click: {widget: {class: QPushButton, text: Apply}}
+  - wait_for: {dialog_closed: Edit the properties of a structure box}
+  - focus: {rect: [320, 170, 300, 110]}
+    secs: 5
+  - hold: 2
+
+  - chapter: "A box nobody touches looks and saves as before"
+  - hold: 3
+  - end_caption:
+
+  - title: Move and size a structure box's name
+    sub: "Drag it; double-click it for its size"
+    hold: 3
+
+expect:
+  - saved_text: 'label_x="'
+  - saved_text: 'label_size="14"'

@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Video for "Project languages: translate title blocks and DXF export": in a
+# project with a second language, the folio's title is collected for
+# translation and the title block is drawn in the language being shown.
+# The fixture title-block-language.qet beside this file has one folio titled
+# "Motor feed" and the language de, with no words yet.
+title: Title blocks in the project language
+summary: A folio's title is offered for translation, and the title block is drawn in the language the project is shown in.
+fixture: title-block-language.qet
+icon: Project languages...
+thumbnail: {before: 2}
+
+setup:
+  - frame: {rect: [0, 0, 540, 420], fill: 0.9}
+
+steps:
+  - title: Title blocks in the project language
+    sub: "Project languages: the title block follows"
+    hold: 4
+
+  - chapter: "A folio titled Motor feed, in a project with German added"
+  - focus: {rect: [0, 320, 540, 80]}
+    secs: 5
+  - hold: 5
+
+  - chapter: "Open {path:Project languages...}"
+  - menu: Project languages...
+  - wait_for: {dialog: Project languages}
+  - caption: "Collect the texts: the folio's title is now in the list"
+  - click: {widget: {class: QPushButton, text: Collect texts of the project}}
+  - wait_for: {dialog: Collect texts}
+  - hold: 2
+  - press: Return
+  - wait_for: {dialog_closed: Collect texts}
+  - hold: 1.5
+
+  - chapter: "Type the German words beside it"
+  - click: {widget: {class: QTableWidget}}
+  - press: ctrl+Home
+  - press: Right
+  - type: "Motorzufuhr"
+  - press: Return
+  - hold: 2
+  - caption: "Show the folios in: de"
+  - click: {widget: {class: QComboBox, text: "en (as drawn)"}}
+  - click: {combo_item: de}
+  - hold: 1.5
+  - click: {widget: {class: QPushButton, text: OK}}
+  - wait_for: {dialog_closed: Project languages}
+
+  - chapter: "The title block now reads Motorzufuhr"
+  - focus: {rect: [0, 320, 540, 80]}
+    secs: 6
+  - hold: 6
+  - caption: "The words as written are kept: choose en and Motor feed is back"
+  - hold: 4
+  - caption: "A DXF export writes the words in the language shown"
+  - hold: 4
+  - end_caption:
+
+  - title: Title blocks in the project language
+    sub: "{path:Project languages...}"
+    hold: 3
+
+expect:
+  - saved_text: 'active="de"'
+  - saved_text: 'phrase source="Motor feed"'
+  - saved_text: 'value="Motorzufuhr"'

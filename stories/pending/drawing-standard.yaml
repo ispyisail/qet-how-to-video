@@ -1,0 +1,54 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Video for discussion #1878, item C6 (agreed in #1289): a project records
+# the drawing standard it is drawn to, chosen in Project properties > General
+# in the "Drawing standard:" list (As before / IEC / NFPA). It changes nothing
+# by itself. As before stores nothing; IEC is saved as the project property
+# drawing_standard. The fixture has no drawing_standard.
+title: The project's drawing standard
+summary: "Project properties has a Drawing standard list: As before, IEC or NFPA. The project records it."
+fixture: drawing-standard.qet
+icon: Project properties
+thumbnail: {before: 2}
+
+steps:
+  - title: The project's drawing standard
+    sub: "Discussion #1878, item C6: drawing standard"
+    hold: 3
+
+  - chapter: "A project can say which standard it is drawn to"
+  - menu: Project properties
+  - wait_for: {dialog: Project properties}
+  - hold: 1
+
+  - chapter: "{path:Project properties} ▸ General ▸ Drawing standard"
+  - highlight: {widget: {class: QComboBox, name: drawingStandard, title: "Project properties"}, secs: 3}
+  - hold: 1
+
+  - chapter: "As before keeps a project exactly as it was"
+  - hold: 2
+
+  - chapter: "As before, IEC or NFPA"
+  - click: {widget: {class: QComboBox, name: drawingStandard, title: "Project properties"}}
+  - hold: 4
+  - click: {combo_item: IEC}
+  - hold: 2
+
+  - chapter: "It changes nothing yet: features to come will follow it"
+  - hold: 3
+  - click: {widget: {class: QPushButton, text: OK, title: "Project properties"}}
+  - wait_for: {dialog_closed: Project properties}
+  - hold: 2
+
+  - chapter: "Saved with the project"
+  - key: ctrl+s
+  - hold: 2
+  - end_caption:
+
+  - title: The project's drawing standard
+    sub: "Discussion #1878, item C6: drawing standard"
+    hold: 2
+
+expect:
+  # a .qetz keeps project properties as rows of project.sqlite (name, value);
+  # a plain .qet keeps <property name="drawing_standard">iec</property>
+  - saved_text: 'drawing_standard(?:">|[^A-Za-z]{0,8})iec'

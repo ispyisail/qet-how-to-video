@@ -1,0 +1,78 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Video for the project setting that lets %{plant} and %{location} give the
+# place a symbol takes (the step after #1846, agreed on #1845). A device
+# belongs to a plant (=) and a location (+): those of its sheet, or of the
+# structure box it is in, unless it has its own. With the setting on,
+# %{plant} and %{location} show that place, and follow the symbol into and
+# out of a box. The fixture plant-location-from-box.qet beside this file has
+# one sheet, "Panel CP1" (plant FACTORY, location CP1), with K1 on it and
+# K10, K11, K12 inside a structure box of location CP10; no symbol has a plant
+# or location of its own, and each shows "%{label}  =%{plant} +%{location}".
+title: Plant and location from the box
+summary: Symbols without their own plant or location show those of their structure box or sheet.
+fixture: plant-location-from-box.qet
+icon: Add a structure box
+thumbnail: {before: 2}
+
+setup:
+  - frame: {rect: [80, 200, 1020, 380], fill: 0.9}
+
+steps:
+  - title: Plant and location from the box
+    sub: "Symbols without their own plant or location"
+    hold: 4
+
+  - chapter: "Sheet 1 is plant FACTORY, cabinet CP1: {path:Sheet properties}"
+  - menu: Sheet properties
+  - wait_for: {dialog: Sheet properties}
+  - highlight: {widget: {class: QLineEdit, name: m_plant}}
+    secs: 2.5
+  - highlight: {widget: {class: QLineEdit, name: m_loc}}
+    secs: 2.5
+  - click: {widget: {class: QPushButton, text: Cancel}}
+  - wait_for: {dialog_closed: Sheet properties}
+  - caption: "A structure box marks switchboard CP10"
+  - hold: 3
+  - caption: "No symbol has a plant or location of its own: after = and + there is nothing"
+  - focus: {rect: [80, 230, 1020, 200]}
+    secs: 5
+  - hold: 3
+
+  - chapter: "Let them show the place they are in: {path:Project properties}"
+  - menu: Project properties
+  - wait_for: {dialog: Project properties}
+  - hold: 1
+  - highlight: {widget: {class: QCheckBox, contains: "their structure box or folio"}}
+    secs: 3
+  - click: {widget: {class: QCheckBox, contains: "their structure box or folio"}}
+  - hold: 1.5
+  - click: {widget: {class: QPushButton, text: OK}}
+  - wait_for: {dialog_closed: Project properties}
+  - caption: "K1 takes the sheet's =FACTORY +CP1; inside the box, K10 to K12 take +CP10"
+  - focus: {rect: [80, 230, 1020, 200]}
+    secs: 6
+  - hold: 4
+
+  - chapter: "Drag K12 out of the box: it is in cabinet CP1 again"
+  - drag: {from: [860, 320], to: [860, 520]}
+  - hold: 1
+  - focus: {rect: [80, 230, 1020, 340]}
+    secs: 5
+  - hold: 2
+
+  - chapter: "And back in: CP10"
+  - drag: {from: [860, 520], to: [860, 320]}
+  - hold: 1
+  - focus: {rect: [80, 230, 1020, 200]}
+    secs: 5
+  - hold: 3
+  - end_caption:
+
+  - title: Plant and location from the box
+    sub: "{path:Project properties}, General"
+    hold: 3
+
+expect:
+  - saved_text: 'plant_location inherited="true"'
+  - shapes: {type: Rectangle, count: 1}
+  - saved_text: 'location="CP10"[^>]*structure_box="true"'

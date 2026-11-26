@@ -1,0 +1,168 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Video for device types (C1, discussion #1878, pull requests #1884-#1893):
+# a coil and its contacts are one device, and its device type says what the
+# device is made of. With "Follow device types" on, a coil placed is asked
+# its type, each contact linked takes the next free contact of the type,
+# one too many is refused, a bigger type carries the contacts over, and the
+# check and the lists show the result.
+# The fixture device-types.qet beside this file is one folio, "Motor
+# starter": a power contact and a motor, two NO contacts (one for a lamp),
+# none of them linked; two device types, CONTACTOR-1NO and CONTACTOR-2NO;
+# and an element numbering rule "-KM1" so the coil placed has a label.
+title: Devices and device types
+summary: A coil and its contacts are one device, and its device type says what the device is made of. QElectroTech then numbers each contact for you, refuses one too many, and checks that every part is drawn.
+icon: Device types...
+pr: 1893
+fixture: device-types.qet
+thumbnail: {before: 4}
+
+setup:
+  - frame: {rect: [60, 110, 560, 380], fill: 0.85}
+
+steps:
+  - title: Devices and device types
+    sub: "A coil and its contacts, numbered and counted for you"
+    hold: 4
+
+  - chapter: "A simple drawing: every symbol stands alone"
+  - focus: {rect: [60, 110, 560, 380]}
+    secs: 3
+  - hold: 3
+  - caption: "A motor starter: main contacts, a motor, two auxiliary contacts and a lamp"
+  - hold: 4
+  - caption: "Nothing says which coil they belong to, or how many contacts the contactor really has"
+  - hold: 5
+
+  - chapter: "A device type says what a device is made of"
+  - menu: Device types...
+  - wait_for: {dialog: Device types}
+  - hold: 2
+  - click: {widget: {class: QTreeWidget, text: CONTACTOR-1NO}}
+  - click: {widget: {class: QPushButton, text: "Edit..."}}
+  - wait_for: {dialog: Device type}
+  - caption: "CONTACTOR-1NO: a coil A1 A2, main contacts 1 to 6, and one NO contact 13 14"
+  - hold: 6
+  - press: Escape
+  - wait_for: {dialog_closed: Device type}
+  - hold: 1
+  - press: Escape
+  - wait_for: {dialog_closed: Device types}
+
+  - chapter: "Turn it on: {path:Project properties}, Follow device types"
+  - menu: Project properties
+  - wait_for: {dialog: Project properties}
+  - click: {widget: {class: QCheckBox, text: "Follow device types when placing and linking"}}
+  - hold: 2
+  - click: {widget: {class: QPushButton, text: OK}}
+  - wait_for: {dialog_closed: Project properties}
+
+  - chapter: "Place a coil: it asks which device type it is"
+  - click: {widget: {class: QLineEdit, text: "Search..."}}
+  - type: "Coil"
+  - hold: 1.5
+  - click: {widget: {class: QListView, text: Coil, contains: Motor starter}}
+    double: true
+  - click: [340, 400]
+  - wait_for: {dialog: Device type}
+  - caption: "Only the types this coil can be the head of are offered"
+  - hold: 4
+  - click: {widget: {class: QPushButton, text: OK, title: Device type}}
+  - wait_for: {dialog_closed: Device type}
+  - key: Escape
+  - hold: 1
+
+  - chapter: "Link each contact: it takes the next free contact of its type"
+  - click: [340, 200]
+  - hold: 1
+  - click: {widget: {class: QTreeWidget, text: "-KM1", title: QElectroTech}}
+    button: right
+  - press: Down
+  - press: Return
+  - hold: 2
+  - click: [160, 200]
+  - hold: 1
+  - click: {widget: {class: QTreeWidget, text: "-KM1", title: QElectroTech}}
+    button: right
+  - press: Down
+  - press: Return
+  - hold: 2
+  - caption: "The coil lists its contacts: their terminal numbers, and where they are drawn"
+  - focus: {rect: [290, 370, 170, 100]}
+    secs: 5
+  - hold: 5
+
+  - chapter: "One contact too many: it is refused"
+  - click: [460, 200]
+  - hold: 1
+  - click: {widget: {class: QTreeWidget, text: "-KM1", title: QElectroTech}}
+    button: right
+  - press: Down
+  - press: Return
+  - wait_for: {dialog: That link cannot be made}
+  - caption: "CONTACTOR-1NO has one NO contact, and it is already used"
+  - hold: 5
+  - press: Return
+  - wait_for: {dialog_closed: That link cannot be made}
+
+  - chapter: "Need one more contact? Change the device type"
+  - click: [340, 400]
+  - key: ctrl+e
+  - wait_for: {dialog: Element properties}
+  - click: {widget: {class: QTabBar, text: Parts, title: Element properties}}
+  - hold: 1.5
+  - click: {widget: {class: QPushButton, text: "Change the device type...", title: Element properties}}
+  - wait_for: {dialog: Device type}
+  - hold: 2
+  - click: {widget: {class: QPushButton, text: OK, title: Device type}}
+  - wait_for: {dialog: Change the device type}
+  - caption: "Its contacts are carried over to the new type"
+  - hold: 3
+  - press: Return
+  - wait_for: {dialog_closed: Change the device type}
+  - hold: 3
+  - click: {widget: {class: QPushButton, text: Cancel, title: Element properties}}
+  - wait_for: {dialog_closed: Element properties}
+  - caption: "Now the lamp contact can be linked: it takes 23 24"
+  - click: [460, 200]
+  - hold: 1
+  - click: {widget: {class: QTreeWidget, text: "-KM1", title: QElectroTech}}
+    button: right
+  - press: Down
+  - press: Return
+  - hold: 2
+  - click: [600, 520]
+  - focus: {rect: [290, 370, 170, 100]}
+    secs: 5
+  - hold: 4
+
+  - chapter: "Check it: {path:Check device types...}"
+  - menu: Check device types...
+  - wait_for: {dialog: Check device types}
+  - click: {widget: {class: QCheckBox, contains: complete}}
+  - caption: "Every part of the type is drawn. A part missing, a contact too many or one without its coil would be listed here"
+  - hold: 7
+  - click: {widget: {class: QPushButton, text: Close, title: Check device types}}
+  - wait_for: {dialog_closed: Check device types}
+
+  - chapter: "List the device types: full or brief"
+  - menu: Device types...
+  - wait_for: {dialog: Device types}
+  - click: {widget: {class: QPushButton, text: Export list}}
+  - caption: "Every part and its terminals, or the name and description of each type, as a CSV file"
+  - hold: 5
+  - press: Escape
+  - hold: 0.5
+  - press: Escape
+  - wait_for: {dialog_closed: Device types}
+  - end_caption:
+
+  - title: Devices and device types
+    sub: "{path:Device types...} and {path:Project properties}"
+    hold: 4
+
+expect:
+  # the four symbols name the new type, and the NO contacts took the
+  # drawings with the terminals of their parts, 13 14 and 23 24
+  - saved_text: 'CONTACTOR-2NO'
+  - saved_text: 'e_NO_13-14\.elmt'
+  - saved_text: 'e_NO_23-24\.elmt'

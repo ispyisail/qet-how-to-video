@@ -1,0 +1,72 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Video for "Let the generic device wizard make a PLC" (pull request #1857):
+# a side of the generic device is marked as PLC inputs or outputs, and the
+# symbol made is a PLC with its table of inputs and outputs filled.
+# The fixture generic-device-plc.qet beside this file is one empty folio.
+title: A PLC from the generic device wizard
+summary: Mark a side of a generic device as PLC inputs or outputs, and the symbol is a PLC with its inputs and outputs listed.
+icon: Add a generic device
+pr: 1857
+fixture: generic-device-plc.qet
+thumbnail: {before: 2}
+
+setup:
+  - frame: {rect: [300, 250, 500, 360], fill: 0.8}
+
+steps:
+  - title: A PLC from the generic device wizard
+    sub: "Sides marked as inputs and outputs"
+    hold: 4
+
+  - chapter: "Open {path:Add a generic device}, and go to its terminals"
+  - menu: Add a generic device
+  - wait_for: {dialog: Generic device}
+  - hold: 1.5
+  - click: {widget: {class: QPushButton, text: "Next >"}}
+  - hold: 1.5
+
+  - chapter: "Left side: name the inputs, then mark them Digital inputs"
+  - click: {widget: {class: QTabBar, text: Left}}
+  - press: Tab
+  - press: ctrl+a
+  - type: "I0,I1"
+  - press: Tab
+  - hold: 1
+  - click: {widget: {class: QComboBox, text: None}}
+  - click: {combo_item: Digital inputs}
+  - hold: 2
+
+  - chapter: "Right side: mark it Digital outputs"
+  - click: {widget: {class: QTabBar, text: Right}}
+  - hold: 1
+  - click: {widget: {class: QComboBox, text: None}}
+  - click: {combo_item: Digital outputs}
+  - hold: 2
+
+  - chapter: "Finish, and place it on the folio"
+  - click: {widget: {class: QPushButton, text: Finish}}
+  - wait_for: {dialog_closed: Generic device}
+  - click: [500, 400]
+  - key: Escape
+    pace: 1
+  - hold: 2
+
+  - chapter: "It is a PLC: its inputs and outputs are listed"
+  - click: [500, 400]
+    double: true
+  - wait_for: {dialog: Element properties}
+  - click: {widget: {class: QTabBar, text: "Cross-reference (master)"}}
+  - focus: {widget: {class: QTableWidget}}
+    secs: 6
+  - hold: 5
+  - press: Escape
+  - wait_for: {dialog_closed: Element properties}
+  - end_caption:
+
+  - title: A PLC from the generic device wizard
+    sub: "{path:Add a generic device}"
+    hold: 3
+
+expect:
+  - saved_text: 'entree_digitale'
+  - saved_text: 'sortie_digitale'
