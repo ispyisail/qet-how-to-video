@@ -33,6 +33,7 @@
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>
+#include <QScrollArea>
 #include <QScrollBar>
 #include <QListView>
 #include <QLineEdit>
@@ -445,6 +446,12 @@ private:
 				if (!plain(t).contains(contains))
 					continue;
 			}
+			// a widget low on a page that scrolls (a settings page that has
+			// grown) is scrolled into view first, as a person would, so the
+			// box returned is on the screen and a click reaches it
+			for (QWidget *p = w->parentWidget(); p && p != w->window(); p = p->parentWidget())
+				if (auto *sa = qobject_cast<QScrollArea *>(p))
+					sa->ensureWidgetVisible(w, 0, 20);
 			// a check box only takes a click on its indicator and text, not
 			// on the empty width a layout gives it
 			QRect hit_rect = w->rect();

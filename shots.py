@@ -160,8 +160,32 @@ class Session:
             except subprocess.TimeoutExpired:
                 p.kill()
         self.procs = []
+        self._free_shared_memory()
         if self.out.resolve().is_relative_to(self.dir.resolve()) is False and not getattr(self, "keep", False):
             shutil.rmtree(self.dir, ignore_errors=True)   # the copy of QET and its sandbox
+
+    def _free_shared_memory(self):
+        """Remove the shared memory block QElectroTech's SingleApplication made.
+
+        It is a System V block, its key ftok() of a file in our TMPDIR: the
+        file's inode and device only. Stopped by a signal, QElectroTech never
+        removes it, and the inode is soon given to the key file of a later
+        session, whose QElectroTech then finds the old block, cannot attach
+        to it and quits ("SingleApplication: Unable to attach to shared
+        memory block", seen as "no window 'QElectroTech'; have []").
+        """
+        qet = getattr(self, "qet", None)
+        if qet is None:
+            return
+        try:
+            out = subprocess.run(["ipcs", "-m", "-p"], capture_output=True, text=True).stdout
+        except OSError:
+            return                                  # no ipcs: nothing to do
+        for line in out.splitlines():
+            f = line.split()
+            # shmid owner cpid lpid
+            if len(f) == 4 and f[0].isdigit() and f[2] == str(qet.pid):
+                subprocess.run(["ipcrm", "-m", f[0]], capture_output=True)
 
     # -- X helpers --------------------------------------------------------
     def run(self, *cmd, check=False) -> str:
